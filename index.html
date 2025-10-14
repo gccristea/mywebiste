@@ -1,0 +1,402 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>George</title>
+    <link rel="icon" type="image/png" href="images/favicon.png" />
+  <style>
+    @font-face {
+  font-family: 'FiraCodeNerdFontMono';
+  src: url('/fonts/FiraCodeNerdFontMono-Medium.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+    body {
+      background-color: black;
+      color: #00ff00;
+      font-family: 'Fira Code', monospace;
+      margin: 0;
+      padding: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'FiraCodeNerdFontMono', monospace;
+    }
+
+    a {
+      color: #00ff00;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      border: 3px solid #00ff00;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+           text-decoration: none;
+    }
+
+    .highlight {
+      background-color: #00ff00;
+      color: black;
+      padding: 2px 5px;
+    }
+
+    .top-section-link {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .top-section-link:hover {
+      opacity: 0.95;
+    }
+
+    .top-section {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .image-container img {
+      width: 200px;
+      cursor: pointer;
+      border: 2px solid #00ff00;
+      border-radius: 5px;
+    }
+
+    .personal-info {
+      flex: 1;
+      align-items: center;
+      text-align: left;
+    }
+
+.file-list {
+  margin-top: 10px;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+    .file-entry {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 5px 0;
+      padding-left: 180px;
+    }
+
+    .file-entry span {
+      font-size: 0.65em;
+      opacity: 0.5;
+      margin-right: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .pagination button {
+      background-color: black;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      padding: 5px 10px;
+      font-family: monospace;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .pagination button:hover {
+      background-color: #00ff00;
+      color: black;
+    }
+
+    .page-number {
+      font-size: 16px;
+      color: #00ff00;
+    }
+
+    .article-content {
+      margin-top: 10px;
+    }
+
+    .article-content pre {
+      margin: 0;
+    }
+
+    .static-links {
+      text-align: center;
+    }
+
+    .link-row {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-top: 10px;
+    }
+
+    .static-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #00ff00;
+      text-decoration: none;
+      font-family: monospace;
+      font-weight: bold;
+    }
+
+    .static-link .emoji {
+      font-size: 2rem;
+      margin-bottom: 5px;
+    }
+
+    .static-link:hover {
+      text-decoration: underline;
+      color: #00ff99;
+    }
+
+    #info-container {
+      text-align: center;
+    }
+
+    #info-container p {
+      margin-bottom: 10px;
+    }
+
+    #articleListContainer p:first-child {
+      font-size: 24px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+  .file-entry {
+    flex-direction: column;
+    align-items: center;
+    padding-left: 0;
+    text-align: center;
+  }
+
+  .file-entry span {
+    margin-bottom: 5px;
+    justify-content: center;
+  }
+
+  .top-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .personal-info {
+    text-align: left;
+  }
+
+  .image-container img {
+    width: 100%;
+    max-width: 250px;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="container" id="info-container">
+    <p>Welcome to my website</p>
+<div class="top-section-link">
+      <div class="top-section">
+        <div class="image-container">
+          <img id="clickableImage" src="" onclick="changeImage()">
+        </div>
+        <div class="personal-info">
+          ⚙️ George<br>
+          🌍 Europe, Romania<br>
+          🎓 12th grade<br>
+          ⏱️ you wasted <span id="timer">0</span><br>
+ <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" style="text-decoration: none; color: inherit;">
+          ❓ <br>
+  🔙 <span>Home</span> <br>
+</a>
+
+        </div>
+      </div>
+</div>
+  </div>
+
+  <div class="container static-links">
+    <div class="link-row">
+      <a class="static-link" href="./pages/about" target="_blank"><div class="emoji">👤</div><div class="label">About</div></a>
+      <a class="static-link" href="./pages/credits" target="_blank"><div class="emoji">💾</div><div class="label">Credits</div></a>
+      <a class="static-link" href="./pages/contact" target="_blank"><div class="emoji">📨</div><div class="label">Contact</div></a>
+    </div>
+  </div>
+
+  <div class="container" id="articleListContainer">
+    <p>random stuff</p>
+    <div class="file-list" id="fileList"></div>
+    <div class="pagination">
+      <button onclick="changePage(-1)">◀ Prev</button>
+      <span class="page-number" id="pageNumber">Page 1</span>
+      <button onclick="changePage(1)">Next ▶</button>
+    </div>
+  </div>
+
+<script>
+  const image = document.getElementById('clickableImage');
+  const startImages = [
+    'start/image1.png',
+    'start/image2.png',
+    'start/image3.png',
+    'start/image4.png',
+    'start/image5.png'
+  ];
+
+  function getRandomImage() {
+    return startImages[Math.floor(Math.random() * startImages.length)];
+  }
+
+  function changeImage() {
+    let newImg;
+    do {
+      newImg = getRandomImage();
+    } while (image.src.endsWith(newImg));
+    image.src = newImg;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    image.src = getRandomImage();
+  });
+
+  let currentPage = 0;
+  let files = [];
+
+async function fetchArticles() {
+  try {
+    const res = await fetch('./div/');
+    const text = await res.text();
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(text, 'text/html');
+    const links = Array.from(doc.querySelectorAll('a'));
+
+    const folders = links
+      .map(link => link.getAttribute('href'))
+      .filter(href =>
+        href &&
+        !href.startsWith('?') &&
+        href.endsWith('/') &&
+        href !== '../' &&
+        href !== './'
+      )
+      .map(href => decodeURIComponent(href.replace(/\/$/, ''))); // remove trailing slash
+
+    const metadataPromises = folders.map(async folder => {
+      try {
+        const response = await fetch(`./div/${folder}/`, { method: 'HEAD' });
+        const lastModified = response.headers.get('Last-Modified');
+        return {
+          name: folder,
+          date: lastModified ? new Date(lastModified) : new Date(0)
+        };
+      } catch {
+        return { name: folder, date: new Date(0) };
+      }
+    });
+
+    files = await Promise.all(metadataPromises);
+    files.sort((a, b) => b.date - a.date);
+    renderFolders();
+
+  } catch (err) {
+    document.getElementById('fileList').innerHTML = '<p style="color: red;">⚠️ Could not fetch folders. Ensure the server supports directory listing and `./div/` exists.</p>';
+  }
+}
+
+
+  function renderFolders() {
+  const fileList = document.getElementById('fileList');
+  fileList.innerHTML = '';
+
+  const start = currentPage * 10;
+  const end = start + 10;
+  const pageFolders = files.slice(start, end);
+
+  if (pageFolders.length === 0) {
+    fileList.innerHTML = '<p>N-am.</p>';
+    return;
+  }
+
+  pageFolders.forEach(folder => {
+    const link = `./div/${folder.name}/`;
+
+    const div = document.createElement('div');
+    div.className = 'file-entry';
+
+    const formattedDate = folder.date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
+
+    div.innerHTML = `
+      <span>${formattedDate}</span>
+      <a href="${link}">${folder.name}</a>
+    `;
+
+    fileList.appendChild(div);
+  });
+
+  const pageNumDisplay = document.getElementById('pageNumber');
+  if (pageNumDisplay) {
+    const totalPages = Math.ceil(files.length / 10);
+    pageNumDisplay.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+  }
+}
+
+
+  function changePage(offset) {
+    const newPage = currentPage + offset;
+    const maxPage = Math.ceil(files.length / 10) - 1;
+    if (newPage >= 0 && newPage <= maxPage) {
+      currentPage = newPage;
+      renderFolders(); // <-- fix here
+    }
+  }
+
+  fetchArticles();
+
+  let seconds = 0;
+  const timerElement = document.getElementById('timer');
+
+  setInterval(() => {
+    seconds++;
+    if (timerElement) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      timerElement.textContent = minutes > 0
+        ? `${minutes}m${remainingSeconds > 0 ? ` ${remainingSeconds}s` : ''}`
+        : `${seconds}s`;
+    }
+  }, 1000);
+</script>
+
+</body>
+</html>
