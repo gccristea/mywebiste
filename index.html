@@ -83,7 +83,7 @@
     }
 
 .file-list {
-  margin-top: 10px;
+  margin-top: 4px;
   text-align: center;
   flex-direction: column;
   align-items: center;
@@ -249,153 +249,75 @@
     </div>
   </div>
 
-  <div class="container" id="articleListContainer">
-    <p>random stuff</p>
-    <div class="file-list" id="fileList"></div>
-    <div class="pagination">
-      <button onclick="changePage(-1)">◀ Prev</button>
-      <span class="page-number" id="pageNumber">Page 1</span>
-      <button onclick="changePage(1)">Next ▶</button>
-    </div>
-  </div>
+ <div class="container" id="articleListContainer">
+        <div class="file-list" id="fileList">
+          <p>Random Stuff:</p>
+        <div class="file-entry">
+            <span>2024-03-10</span>
+            <a href="./div/quiz/index.html">quiz</a>
+        </div>
+
+        <div class="file-entry">
+            <span>2024-02-25</span>
+            <a href="./div/online/index.html">online</a>
+        </div>
+        
+        <div class="file-entry">
+            <span>2024-01-01</span>
+            <a href="./div/template/index.html">template</a>
+        </div>
+        
+        </div>
+        <div class="pagination">
+      <button disabled>◀ Prev</button>
+      <span class="page-number">Page 1 of 1</span>
+      <button disabled>Next ▶</button>
+    </div>
+  </div>
 
 <script>
-  const image = document.getElementById('clickableImage');
-  const startImages = [
-    'start/image1.png',
-    'start/image2.png',
-    'start/image3.png',
-    'start/image4.png',
-    'start/image5.png'
-  ];
+  const image = document.getElementById('clickableImage');
+  const startImages = [
+    'start/image1.png',
+    'start/image2.png',
+    'start/image3.png',
+    'start/image4.png',
+    'start/image5.png'
+  ];
 
-  function getRandomImage() {
-    return startImages[Math.floor(Math.random() * startImages.length)];
-  }
+  function getRandomImage() {
+    return startImages[Math.floor(Math.random() * startImages.length)];
+  }
 
-  function changeImage() {
-    let newImg;
-    do {
-      newImg = getRandomImage();
-    } while (image.src.endsWith(newImg));
-    image.src = newImg;
-  }
+  function changeImage() {
+    let newImg;
+    do {
+      newImg = getRandomImage();
+    } while (image.src.endsWith(newImg));
+    image.src = newImg;
+  }
 
-  window.addEventListener('DOMContentLoaded', () => {
-    image.src = getRandomImage();
-  });
-
-  let currentPage = 0;
-  let files = [];
-
-async function fetchArticles() {
-  try {
-    const res = await fetch('./div/');
-    const text = await res.text();
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, 'text/html');
-    const links = Array.from(doc.querySelectorAll('a'));
-
-    const folders = links
-      .map(link => link.getAttribute('href'))
-      .filter(href =>
-        href &&
-        !href.startsWith('?') &&
-        href.endsWith('/') &&
-        href !== '../' &&
-        href !== './'
-      )
-      .map(href => decodeURIComponent(href.replace(/\/$/, ''))); // remove trailing slash
-
-    const metadataPromises = folders.map(async folder => {
-      try {
-        const response = await fetch(`./div/${folder}/`, { method: 'HEAD' });
-        const lastModified = response.headers.get('Last-Modified');
-        return {
-          name: folder,
-          date: lastModified ? new Date(lastModified) : new Date(0)
-        };
-      } catch {
-        return { name: folder, date: new Date(0) };
-      }
-    });
-
-    files = await Promise.all(metadataPromises);
-    files.sort((a, b) => b.date - a.date);
-    renderFolders();
-
-  } catch (err) {
-    document.getElementById('fileList').innerHTML = '<p style="color: red;">⚠️ Could not fetch folders. Ensure the server supports directory listing and `./div/` exists.</p>';
-  }
-}
+  window.addEventListener('DOMContentLoaded', () => {
+    image.src = getRandomImage();
+    // Removed all dynamic fetching/rendering logic
+  });
 
 
-  function renderFolders() {
-  const fileList = document.getElementById('fileList');
-  fileList.innerHTML = '';
+// REMOVED: fetchArticles, renderFolders, and changePage functions
 
-  const start = currentPage * 10;
-  const end = start + 10;
-  const pageFolders = files.slice(start, end);
+  let seconds = 0;
+  const timerElement = document.getElementById('timer');
 
-  if (pageFolders.length === 0) {
-    fileList.innerHTML = '<p>N-am.</p>';
-    return;
-  }
-
-  pageFolders.forEach(folder => {
-    const link = `./div/${folder.name}/`;
-
-    const div = document.createElement('div');
-    div.className = 'file-entry';
-
-    const formattedDate = folder.date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric'
-    });
-
-    div.innerHTML = `
-      <span>${formattedDate}</span>
-      <a href="${link}">${folder.name}</a>
-    `;
-
-    fileList.appendChild(div);
-  });
-
-  const pageNumDisplay = document.getElementById('pageNumber');
-  if (pageNumDisplay) {
-    const totalPages = Math.ceil(files.length / 10);
-    pageNumDisplay.textContent = `Page ${currentPage + 1} of ${totalPages}`;
-  }
-}
-
-
-  function changePage(offset) {
-    const newPage = currentPage + offset;
-    const maxPage = Math.ceil(files.length / 10) - 1;
-    if (newPage >= 0 && newPage <= maxPage) {
-      currentPage = newPage;
-      renderFolders(); // <-- fix here
-    }
-  }
-
-  fetchArticles();
-
-  let seconds = 0;
-  const timerElement = document.getElementById('timer');
-
-  setInterval(() => {
-    seconds++;
-    if (timerElement) {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      timerElement.textContent = minutes > 0
-        ? `${minutes}m${remainingSeconds > 0 ? ` ${remainingSeconds}s` : ''}`
-        : `${seconds}s`;
-    }
-  }, 1000);
+  setInterval(() => {
+    seconds++;
+    if (timerElement) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      timerElement.textContent = minutes > 0
+        ? `${minutes}m${remainingSeconds > 0 ? ` ${remainingSeconds}s` : ''}`
+        : `${seconds}s`;
+    }
+  }, 1000);
 </script>
 
 </body>
