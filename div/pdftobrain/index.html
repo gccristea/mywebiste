@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BAC Math Runner: Ultimate Edition</title>
+    <title>BAC Math Runner: Turbo Edition</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 
     <style>
         body {
@@ -16,6 +16,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             touch-action: none;
             user-select: none;
+            -webkit-user-select: none;
         }
 
         #game-container {
@@ -26,20 +27,18 @@
             background: linear-gradient(180deg, #2c3e50 0%, #000000 100%);
         }
 
-        /* Liniile drumului */
         .road-line {
             position: absolute;
             top: 0;
             bottom: 0;
-            width: 2px;
-            background-color: rgba(255, 255, 255, 0.2);
+            width: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
             left: 33.33%;
         }
         .road-line:last-of-type {
             left: 66.66%;
         }
 
-        /* Jucătorul */
         #player {
             position: absolute;
             bottom: 120px;
@@ -48,81 +47,114 @@
             background: #3498db;
             border-radius: 10px;
             box-shadow: 0 0 20px #3498db;
-            transition: left 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Smooth movement */
+            transition: left 0.2s ease-out;
             z-index: 10;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: white;
-            font-weight: bold;
         }
 
-        /* Cutia Întrebării */
+        /* Efect vizual când e Turbo activ */
+        .player-turbo {
+            box-shadow: 0 0 40px #f1c40f !important;
+            background: #f39c12 !important;
+            transform: translateX(-50%) scale(1.1) !important;
+        }
+
         #question-box {
             position: absolute;
-            top: 20px;
+            top: 70px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.95);
-            padding: 15px 30px;
+            padding: 10px 20px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            font-size: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            font-size: 1.2rem;
             color: #2c3e50;
             z-index: 20;
             text-align: center;
-            min-width: 300px;
-            max-width: 90%;
+            width: 85%;
+            max-width: 600px;
             border-bottom: 4px solid #f1c40f;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Porțile (Răspunsurile) */
         .gate {
             position: absolute;
-            width: 28%; /* Puțin mai mic decât 33% pentru spațiu */
-            height: 100px;
-            background: rgba(46, 204, 113, 0.1);
-            border: 2px solid rgba(46, 204, 113, 0.5);
+            width: 28%;
+            height: 110px;
+            background: rgba(46, 204, 113, 0.15);
+            border: 2px solid rgba(46, 204, 113, 0.6);
             border-radius: 12px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: white;
             text-align: center;
-            backdrop-filter: blur(5px);
             z-index: 5;
+            font-weight: bold;
+            padding: 5px;
+            box-sizing: border-box;
+            backdrop-filter: blur(2px);
         }
 
-        /* HUD */
-        #score-board {
+        /* HUD Scoruri */
+        .hud-panel {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            color: #f1c40f;
-            font-size: 2rem;
-            font-weight: 900;
-            z-index: 30;
-            text-shadow: 2px 2px 0 #000;
-        }
-
-        #level-indicator {
-            position: absolute;
-            top: 60px;
-            right: 20px;
-            color: #ecf0f1;
+            top: 15px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
             font-size: 1rem;
             z-index: 30;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
-        /* Ecrane UI */
+        #score-board { left: 20px; background: rgba(39, 174, 96, 0.9); }
+        #mistakes-board { right: 20px; background: rgba(192, 57, 43, 0.9); }
+
+        /* Buton TURBO pentru mobil */
+        #turbo-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(241, 196, 15, 0.3);
+            border: 4px solid #f1c40f;
+            color: #f1c40f;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            user-select: none;
+            font-size: 0.9rem;
+            backdrop-filter: blur(4px);
+            transition: all 0.1s;
+        }
+
+        #turbo-btn:active, .turbo-active-btn {
+            background: #f1c40f !important;
+            color: #000 !important;
+            transform: scale(0.9);
+        }
+
+        /* Ecrane */
         .screen {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.85);
+            background: rgba(0,0,0,0.92);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -130,24 +162,38 @@
             z-index: 100;
             color: white;
             text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
 
-        button {
+        /* Feedback Box */
+        #feedback-content {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            border: 1px solid #bdc3c7;
+        }
+
+        button.main-btn {
             padding: 15px 40px;
-            font-size: 1.5rem;
-            background: #e67e22;
+            font-size: 1.3rem;
+            background: #3498db;
             color: white;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            margin-top: 30px;
-            box-shadow: 0 5px 0 #d35400;
+            margin-top: 20px;
+            box-shadow: 0 5px 0 #2980b9;
             transition: transform 0.1s;
         }
-        button:active { transform: translateY(5px); box-shadow: none; }
+        button.main-btn:active { transform: translateY(4px); box-shadow: none; }
+        .btn-correct { background: #27ae60; box-shadow: 0 5px 0 #219150; }
 
-        .katex { font-size: 1.1em; } /* Mărim puțin formulele */
+        .raw-text { font-family: monospace; font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -156,317 +202,346 @@
     <div class="road-line"></div>
     <div class="road-line"></div>
 
-    <div id="score-board">0</div>
-    <div id="level-indicator">Nivel: Începător</div>
+    <div id="score-board" class="hud-panel">Corecte: 0</div>
+    <div id="mistakes-board" class="hud-panel">Greșeli: 0</div>
 
-    <div id="question-box">Se încarcă...</div>
+    <div id="question-box">?</div>
 
     <div id="player">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="white"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 22h20L12 2zm0 3l7.5 15h-15L12 5z"/></svg>
     </div>
 
     <div id="gates-container"></div>
 
+    <div id="turbo-btn">TURBO</div>
+
     <div id="start-screen" class="screen">
-        <h1 style="color: #f1c40f; font-size: 3rem;">BAC MATH RUNNER</h1>
-        <p>Apasă Stânga/Dreapta sau atinge ecranul.</p>
-        <p>Formulele sunt afișate în format matematic real.</p>
-        <button onclick="startGame()">START</button>
+        <h1 style="color: #f1c40f; font-size: 2.5rem;">BAC MATH RUNNER</h1>
+        <p style="font-size: 1.1rem; color:#ccc">Mod de Învățare</p>
+        <ul style="text-align: left; font-size: 1rem; margin-bottom: 30px; line-height: 1.6;">
+            <li>🐢 Viteza normală este lentă (pentru gândire).</li>
+            <li>🚀 Ține apăsat <b>Săgeata Sus</b> sau butonul <b>TURBO</b> pentru viteză maximă.</li>
+            <li>🎓 Jocul nu se termină la greșeli.</li>
+        </ul>
+        <button onclick="initGame()" class="main-btn btn-correct">ÎNCEPE JOCUL</button>
     </div>
 
-    <div id="game-over-screen" class="screen hidden">
-        <h1 style="color: #e74c3c">AI GREȘIT!</h1>
-        <div id="wrong-answer-details" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin: 20px;"></div>
-        <p>Scor Final: <span id="final-score">0</span></p>
-        <button onclick="startGame()">Din nou</button>
+    <div id="feedback-screen" class="screen hidden">
+        <h2 style="color: #e74c3c; margin-top: 0;">AI GREȘIT!</h2>
+        <div id="feedback-content">
+            <p style="color: #bdc3c7; margin-bottom: 5px; font-size: 0.9rem;">Întrebarea:</p>
+            <div id="fb-question" style="font-size: 1.2rem; margin-bottom: 15px;"></div>
+            <hr style="border: 0; border-top: 1px solid #555;">
+            <p style="color: #2ecc71; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem;">Răspunsul Corect:</p>
+            <div id="fb-correct" style="font-size: 1.4rem; color: #2ecc71;"></div>
+            <p id="fb-source" style="font-size: 0.8rem; color: #7f8c8d; margin-top: 15px; text-align: right;"></p>
+        </div>
+        <button onclick="resumeGame()" class="main-btn">CONTINUĂ</button>
     </div>
 </div>
 
 <script>
-    // --- BAZA DE DATE CU FORMULE (LateX) ---
-    // Citate din documentul "Formule_BAC.pdf"
-
+    /* --- DATE (Formule din PDF) --- */
     const database = [
-        // --- PROGRESII (Pagina 1) ---
-        [cite_start]{ q: "\\text{Progresie Aritmetică: } a_n = ?", a: "a_1 + (n-1)r", w1: "a_1 \\cdot r^{n-1}", w2: "a_1 + (n+1)r", src: "p.1 [cite: 26]" },
-        [cite_start]{ q: "\\text{Progresie Aritmetică: Suma } S_n", a: "\\frac{(a_1+a_n)n}{2}", w1: "\\frac{a_1(r^n-1)}{r-1}", w2: "n \\cdot a_1", src: "p.1 [cite: 26]" },
-        [cite_start]{ q: "\\text{Progresie Geometrică: } b_n = ?", a: "b_1 \\cdot q^{n-1}", w1: "b_1 + (n-1)q", w2: "b_1 \\cdot q^n", src: "p.1 [cite: 26]" },
-        [cite_start]{ q: "\\text{Progresie Geometrică: Suma } S_n", a: "b_1 \\frac{q^n-1}{q-1}", w1: "\\frac{(b_1+b_n)n}{2}", w2: "b_1(1-q)^n", src: "p.1 [cite: 26]" },
-        [cite_start]{ q: "\\text{Condiție termeni consecutivi P.A.}", a: "2B = A + C", w1: "B^2 = A \\cdot C", w2: "B = A + C", src: "p.1 [cite: 26]" },
+        // Progresii
+        { q: "a_n \\text{ (P.A.)}", a: "a_1 + (n-1)r", w1: "a_1 \\cdot r^{n-1}", w2: "a_1 + nr", src: "Pag. 1" },
+        { q: "S_n \\text{ (P.A.)}", a: "\\frac{(a_1+a_n)n}{2}", w1: "\\frac{a_1(r^n-1)}{r-1}", w2: "n \\cdot a_1", src: "Pag. 1" },
+        { q: "b_n \\text{ (P.G.)}", a: "b_1 \\cdot q^{n-1}", w1: "b_1 + (n-1)q", w2: "b_1 \\cdot q^n", src: "Pag. 1" },
+        { q: "A, B, C \\text{ (P.A.)}", a: "2B = A + C", w1: "B^2 = A \\cdot C", w2: "B = A + C", src: "Pag. 1" },
 
-        // --- LOGARITMI (Pagina 2) ---
-        [cite_start]{ q: "\\log_a(x \\cdot y) = ?", a: "\\log_a x + \\log_a y", w1: "\\log_a x \\cdot \\log_a y", w2: "\\log_a x - \\log_a y", src: "p.2 [cite: 46]" },
-        [cite_start]{ q: "\\log_a \\left(\\frac{x}{y}\\right) = ?", a: "\\log_a x - \\log_a y", w1: "\\frac{\\log_a x}{\\log_a y}", w2: "\\log_a x + \\log_a y", src: "p.2 [cite: 48]" },
-        [cite_start]{ q: "\\log_a x^n = ?", a: "n \\cdot \\log_a x", w1: "\\log_a x + n", w2: "x^n", src: "p.2 [cite: 42]" },
-        [cite_start]{ q: "\\text{Schimbarea bazei: } \\log_a b = ?", a: "\\frac{\\log_c b}{\\log_c a}", w1: "\\log_b a", w2: "\\log_c a \\cdot \\log_c b", src: "p.2 [cite: 58]" },
+        // Logaritmi
+        { q: "\\log_a(x \\cdot y)", a: "\\log_a x + \\log_a y", w1: "\\log_a x \\cdot \\log_a y", w2: "\\log_a (x+y)", src: "Pag. 2" },
+        { q: "\\log_a x^n", a: "n \\log_a x", w1: "\\log_a x + n", w2: "x^n", src: "Pag. 2" },
+        { q: "\\log_a 1", a: "0", w1: "1", w2: "a", src: "Pag. 2" },
+        { q: "\\log_a b \\text{ (schimb. baza)}", a: "\\frac{\\log_c b}{\\log_c a}", w1: "\\log_c a \\cdot \\log_c b", w2: "\\log_b a", src: "Pag. 2" },
 
-        // --- PUTERI ȘI RADICALI (Pagina 3) ---
-        [cite_start]{ q: "a^m \\cdot a^n = ?", a: "a^{m+n}", w1: "a^{m \\cdot n}", w2: "(a+a)^{m+n}", src: "p.3 [cite: 82]" },
-        [cite_start]{ q: "(a^n)^m = ?", a: "a^{n \\cdot m}", w1: "a^{n+m}", w2: "a^{n^m}", src: "p.3 [cite: 89]" },
-        [cite_start]{ q: "\\sqrt{a} \\cdot \\sqrt{b} = ?", a: "\\sqrt{a \\cdot b}", w1: "\\sqrt{a+b}", w2: "a \\cdot b", src: "p.3 [cite: 107]" },
-        [cite_start]{ q: "\\sqrt[n]{x^q} = ?", a: "x^{\\frac{q}{n}}", w1: "x^{\\frac{n}{q}}", w2: "x^{n-q}", src: "p.3 [cite: 117]" },
+        // Puteri & Radicali
+        { q: "a^m \\cdot a^n", a: "a^{m+n}", w1: "a^{m \\cdot n}", w2: "(2a)^{m+n}", src: "Pag. 3" },
+        { q: "\\sqrt[n]{x^q}", a: "x^{\\frac{q}{n}}", w1: "x^{\\frac{n}{q}}", w2: "x^{n-q}", src: "Pag. 3" },
 
-        // --- NUMERE COMPLEXE (Pagina 4) ---
-        [cite_start]{ q: "i^2 = ?", a: "-1", w1: "1", w2: "0", src: "p.4 [cite: 125]" },
-        { q: "\\text{Modulul } |z| [cite_start]= |a+bi|", a: "\\sqrt{a^2+b^2}", w1: "a^2+b^2", w2: "\\sqrt{a^2-b^2}", src: "p.4 [cite: 145]" },
-        [cite_start]{ q: "\\text{Conjugatul } \\overline{a+bi}", a: "a - bi", w1: "-a - bi", w2: "-a + bi", src: "p.4 [cite: 134]" },
-        { q: "\\text{Ec. gr. [cite_start]II, } \\Delta < 0", a: "x_{1,2} = \\frac{-b \\pm i\\sqrt{-\\Delta}}{2a}", w1: "\\text{Nu are soluții}", w2: "\\frac{-b \\pm \\sqrt{\\Delta}}{2a}", src: "p.4 [cite: 159]" },
+        // Complexe
+        { q: "i^2", a: "-1", w1: "1", w2: "0", src: "Pag. 4" },
+        { q: "|z| = |a+bi|", a: "\\sqrt{a^2+b^2}", w1: "a^2+b^2", w2: "\\sqrt{a^2-b^2}", src: "Pag. 4" },
+        { q: "\\text{Ec. } ax^2+bx+c=0, \\Delta < 0", a: "x_{1,2} = \\frac{-b \\pm i\\sqrt{-\\Delta}}{2a}", w1: "\\text{Nu are soluții}", w2: "\\frac{-b \\pm \\sqrt{\\Delta}}{2a}", src: "Pag. 4" },
 
-        // --- FUNCȚII GR. I & II (Paginile 8-10) ---
-        [cite_start]{ q: "\\text{Vârful Parabolei } V(x_V, y_V)", a: "V(-\\frac{b}{2a}, -\\frac{\\Delta}{4a})", w1: "V(-\\frac{b}{a}, \\frac{\\Delta}{4a})", w2: "V(\\frac{b}{2a}, \\Delta)", src: "p.10 [cite: 305]" },
-        [cite_start]{ q: "\\text{Relațiile lui Viète: } x_1 + x_2", a: "-\\frac{b}{a}", w1: "\\frac{c}{a}", w2: "\\frac{b}{a}", src: "p.9 [cite: 297]" },
-        [cite_start]{ q: "\\text{Relațiile lui Viète: } x_1 \\cdot x_2", a: "\\frac{c}{a}", w1: "-\\frac{b}{a}", w2: "-\\frac{c}{a}", src: "p.9 [cite: 299]" },
+        // Functii
+        { q: "x_V \\text{ (Vârful)}", a: "-\\frac{b}{2a}", w1: "-\\frac{b}{a}", w2: "\\frac{\\Delta}{4a}", src: "Pag. 10" },
+        { q: "y_V \\text{ (Vârful)}", a: "-\\frac{\\Delta}{4a}", w1: "\\frac{\\Delta}{4a}", w2: "-\\frac{b}{2a}", src: "Pag. 10" },
+        { q: "x_1 + x_2 \\text{ (Viète)}", a: "-\\frac{b}{a}", w1: "\\frac{c}{a}", w2: "\\frac{b}{a}", src: "Pag. 9" },
+        { q: "x_1 \\cdot x_2 \\text{ (Viète)}", a: "\\frac{c}{a}", w1: "-\\frac{b}{a}", w2: "-\\frac{c}{a}", src: "Pag. 9" },
 
-        // --- COMBINATORICĂ (Pagina 13) ---
-        [cite_start]{ q: "P_n = ?", a: "n!", w1: "(n-1)!", w2: "n^2", src: "p.13 [cite: 392]" },
-        [cite_start]{ q: "A_n^k = ?", a: "\\frac{n!}{(n-k)!}", w1: "\\frac{n!}{k!(n-k)!}", w2: "n^k", src: "p.13 [cite: 394]" },
-        { q: "C_n^k = ?", a: "\\frac{n!}{k!(n-k)!}", w1: "\\frac{n!}{(n-k)!}", w2: "k! [cite_start]\\cdot n!", src: "p.13 [cite: 396]" },
-        [cite_start]{ q: "\\text{Termenul general binom } T_{k+1}", a: "C_n^k a^{n-k} b^k", w1: "A_n^k a^{n-k} b^k", w2: "C_n^k a^k b^{n-k}", src: "p.13 [cite: 401]" },
+        // Combinatorica
+        { q: "P_n", a: "n!", w1: "(n-1)!", w2: "n^n", src: "Pag. 13" },
+        { q: "A_n^k", a: "\\frac{n!}{(n-k)!}", w1: "\\frac{n!}{k!(n-k)!}", w2: "n^k", src: "Pag. 13" },
+        { q: "C_n^k", a: "\\frac{n!}{k!(n-k)!}", w1: "\\frac{n!}{(n-k)!}", w2: "k! \\cdot n!", src: "Pag. 13" },
 
-        // --- GEOMETRIE ANALITICĂ (Paginile 15-16) ---
-        { q: "\\text{Distanța } AB", a: "\\sqrt{(x_B-x_A)^2 + (y_B-y_A)^2}", w1: "\\sqrt{(x_B+x_A)^2 + (y_B+y_A)^2}", w2: "|x_B-x_A| + [cite_start]|y_B-y_A|", src: "p.15 [cite: 461]" },
-        [cite_start]{ q: "\\text{Mijlocul } M", a: "\\frac{x_A+x_B}{2}, \\frac{y_A+y_B}{2}", w1: "\\frac{x_A-x_B}{2}, \\frac{y_A-y_B}{2}", w2: "x_A+x_B, y_A+y_B", src: "p.15 [cite: 468]" },
-        [cite_start]{ q: "\\text{Panta } m_{AB}", a: "\\frac{y_B-y_A}{x_B-x_A}", w1: "\\frac{x_B-x_A}{y_B-y_A}", w2: "\\frac{y_B+y_A}{x_B+x_A}", src: "p.15 [cite: 469]" },
-        [cite_start]{ q: "\\text{Drepte paralele } d_1 || d_2", a: "m_1 = m_2", w1: "m_1 \\cdot m_2 = -1", w2: "m_1 = -m_2", src: "p.16 [cite: 475]" },
-        [cite_start]{ q: "\\text{Drepte perpendiculare } d_1 \\perp d_2", a: "m_1 \\cdot m_2 = -1", w1: "m_1 = m_2", w2: "m_1 \\cdot m_2 = 1", src: "p.16 [cite: 478]" },
+        // Geometrie Analitica
+        { q: "m_{AB} \\text{ (Panta)}", a: "\\frac{y_B-y_A}{x_B-x_A}", w1: "\\frac{x_B-x_A}{y_B-y_A}", w2: "y_B-y_A", src: "Pag. 15" },
+        { q: "d_1 \\perp d_2", a: "m_1 \\cdot m_2 = -1", w1: "m_1 = m_2", w2: "m_1 \\cdot m_2 = 1", src: "Pag. 16" },
+        { q: "\\text{Distanța } AB", a: "\\sqrt{(x_B-x_A)^2 + (y_B-y_A)^2}", w1: "|x_B-x_A| + |y_B-y_A|", w2: "(x_B+x_A)^2", src: "Pag. 15" },
 
-        // --- TRIGONOMETRIE (Paginile 19-21) ---
-        [cite_start]{ q: "\\sin^2 x + \\cos^2 x = ?", a: "1", w1: "0", w2: "\\tan x", src: "p.19 [cite: 607]" },
-        [cite_start]{ q: "\\sin(2x) = ?", a: "2\\sin x \\cos x", w1: "\\sin x \\cos x", w2: "\\cos^2 x - \\sin^2 x", src: "p.19 [cite: 612]" },
-        [cite_start]{ q: "\\cos(2x) = ?", a: "\\cos^2 x - \\sin^2 x", w1: "2\\sin x \\cos x", w2: "2\\cos x - 1", src: "p.19 [cite: 612]" },
-        [cite_start]{ q: "\\text{Teorema Cosinusului } a^2 = ?", a: "b^2+c^2 - 2bc \\cos A", w1: "b^2+c^2 + 2bc \\cos A", w2: "b^2+c^2 - 2bc \\sin A", src: "p.21 [cite: 628]" },
-        [cite_start]{ q: "\\text{Teorema Sinusurilor}", a: "\\frac{a}{\\sin A} = 2R", w1: "\\frac{a}{\\cos A} = 2R", w2: "a \\cdot \\sin A = R", src: "p.21 [cite: 632]" },
+        // Trigonometrie
+        { q: "\\sin^2 x + \\cos^2 x", a: "1", w1: "0", w2: "-1", src: "Pag. 19" },
+        { q: "\\sin 2x", a: "2\\sin x \\cos x", w1: "\\sin x \\cos x", w2: "\\cos^2 x - \\sin^2 x", src: "Pag. 19" },
+        { q: "\\cos 2x", a: "\\cos^2 x - \\sin^2 x", w1: "2\\sin x \\cos x", w2: "2\\cos x", src: "Pag. 19" },
+        { q: "\\text{Teorema Cosinusului } a^2=", a: "b^2+c^2 - 2bc \\cos A", w1: "b^2+c^2 + 2bc \\cos A", w2: "b^2+c^2 - 2bc \\sin A", src: "Pag. 21" },
 
-        // --- DERIVATE (Pagina 33) ---
-        [cite_start]{ q: "(x^n)' = ?", a: "n x^{n-1}", w1: "x^{n+1}", w2: "n x^n", src: "p.33 [cite: 838]" },
-        [cite_start]{ q: "(\\ln x)' = ?", a: "\\frac{1}{x}", w1: "e^x", w2: "\\ln x", src: "p.33 [cite: 838]" },
-        [cite_start]{ q: "(\\sin x)' = ?", a: "\\cos x", w1: "-\\cos x", w2: "-\\sin x", src: "p.33 [cite: 838]" },
-        [cite_start]{ q: "(\\cos x)' = ?", a: "-\\sin x", w1: "\\sin x", w2: "\\cos x", src: "p.33 [cite: 838]" },
-        [cite_start]{ q: "(\\frac{f}{g})' = ?", a: "\\frac{f'g - fg'}{g^2}", w1: "\\frac{f'g + fg'}{g^2}", w2: "\\frac{f'}{g'}", src: "p.34 [cite: 859]" },
-        [cite_start]{ q: "(\\text{arctg } x)' = ?", a: "\\frac{1}{1+x^2}", w1: "\\frac{1}{\\sqrt{1-x^2}}", w2: "-\\frac{1}{1+x^2}", src: "p.33 [cite: 838]" },
+        // Derivate
+        { q: "(x^n)'", a: "nx^{n-1}", w1: "x^{n+1}", w2: "\\frac{x^{n+1}}{n+1}", src: "Pag. 33" },
+        { q: "(\\ln x)'", a: "\\frac{1}{x}", w1: "e^x", w2: "\\ln x", src: "Pag. 33" },
+        { q: "(\\frac{f}{g})'", a: "\\frac{f'g - fg'}{g^2}", w1: "\\frac{f'g + fg'}{g^2}", w2: "\\frac{f'}{g'}", src: "Pag. 34" },
+        { q: "(\\sin x)'", a: "\\cos x", w1: "-\\cos x", w2: "-\\sin x", src: "Pag. 33" },
+        { q: "(\\cos x)'", a: "-\\sin x", w1: "\\sin x", w2: "\\cos x", src: "Pag. 33" },
 
-        // --- INTEGRALE (Pagina 41) ---
-        [cite_start]{ q: "\\int x^n dx", a: "\\frac{x^{n+1}}{n+1} + C", w1: "n x^{n-1} + C", w2: "x^{n+1} + C", src: "p.41 [cite: 1041]" },
-        { q: "\\int \\frac{1}{x} dx", a: "\\ln|x| + [cite_start]C", w1: "-\\frac{1}{x^2} + C", w2: "e^x + C", src: "p.41 [cite: 1047]" },
-        [cite_start]{ q: "\\int e^x dx", a: "e^x + C", w1: "x e^x + C", w2: "\\ln x + C", src: "p.41 [cite: 1041]" },
-        [cite_start]{ q: "\\int \\frac{1}{x^2+a^2} dx", a: "\\frac{1}{a} \\text{arctg}\\frac{x}{a} + C", w1: "\\frac{1}{2a} \\ln|\\frac{x-a}{x+a}|", w2: "\\arcsin\\frac{x}{a}", src: "p.41 [cite: 1052]" },
-        [cite_start]{ q: "\\int \\frac{1}{\\sqrt{a^2-x^2}} dx", a: "\\arcsin\\frac{x}{a} + C", w1: "\\ln(x+\\sqrt{a^2-x^2})", w2: "\\text{arctg}\\frac{x}{a}", src: "p.41 [cite: 1055]" }
+        // Integrale
+        { q: "\\int x^n dx", a: "\\frac{x^{n+1}}{n+1} + C", w1: "nx^{n-1}", w2: "x^{n+1}", src: "Pag. 41" },
+        { q: "\\int \\frac{1}{x} dx", a: "\\ln|x| + C", w1: "-\\frac{1}{x^2}", w2: "e^x", src: "Pag. 41" },
+        { q: "\\int e^x dx", a: "e^x + C", w1: "xe^x", w2: "\\ln x", src: "Pag. 41" },
+        { q: "\\int \\frac{1}{x^2+a^2} dx", a: "\\frac{1}{a}\\text{arctg}\\frac{x}{a} + C", w1: "\\frac{1}{2a}\\ln\\frac{x-a}{x+a}", w2: "\\arcsin\\frac{x}{a}", src: "Pag. 41" }
     ];
 
-    // --- LOGICA JOCULUI ---
-
-    const container = document.getElementById('game-container');
-    const player = document.getElementById('player');
-    const questionBox = document.getElementById('question-box');
-    const gatesContainer = document.getElementById('gates-container');
-    const scoreBoard = document.getElementById('score-board');
-
-    let gameState = {
+    /* --- LOGICĂ --- */
+    let state = {
         active: false,
+        paused: false,
         score: 0,
-        lane: 1, // 0, 1, 2
-        speed: 5,
-        question: null,
+        mistakes: 0,
+        lane: 1,
+        speed: 2.0,       // Viteză de bază lentă
+        fastForward: false, // Stare Turbo
         gates: [],
-        animationId: null
+        currentQuestionData: null,
+        lastTime: 0
     };
 
-    // Inițializare
-    function startGame() {
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('game-over-screen').classList.add('hidden');
+    const playerEl = document.getElementById('player');
+    const questionBox = document.getElementById('question-box');
+    const gatesContainer = document.getElementById('gates-container');
+    const turboBtn = document.getElementById('turbo-btn');
 
-        gameState.active = true;
-        gameState.score = 0;
-        gameState.speed = 4;
-        gameState.lane = 1;
-        gameState.gates = [];
-        updateScore(0);
-        updatePlayerPosition();
+    function safeRender(latex, element) {
+        if (window.katex) {
+            try {
+                katex.render(latex, element, { throwOnError: false });
+            } catch (e) {
+                element.innerText = latex;
+                element.classList.add('raw-text');
+            }
+        } else {
+            element.innerText = latex;
+            element.classList.add('raw-text');
+        }
+    }
 
-        // Curăță porțile vechi
+    function initGame() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+
+        state.active = true;
+        state.paused = false;
+        state.score = 0;
+        state.mistakes = 0;
+        state.speed = 2.0;
+        state.fastForward = false;
+        state.lane = 1;
+        state.gates = [];
+
+        updateHUD();
+        updatePlayer();
         gatesContainer.innerHTML = '';
 
         spawnQuestion();
-        gameLoop();
+        state.lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
     }
 
-    // Mișcare Player
-    function updatePlayerPosition() {
-        // Lane width is 33.33%
-        // Center of lanes: 16.66%, 50%, 83.33%
-        let positions = ['16.66%', '50%', '83.33%'];
-        player.style.left = positions[gameState.lane];
-        // Centrare cu transform
-        player.style.transform = 'translateX(-50%)';
-    }
-
-    function moveLeft() { if(gameState.lane > 0) gameState.lane--; updatePlayerPosition(); }
-    function moveRight() { if(gameState.lane < 2) gameState.lane++; updatePlayerPosition(); }
-
-    // Generare Întrebare
     function spawnQuestion() {
         const data = database[Math.floor(Math.random() * database.length)];
-        gameState.question = data;
+        state.currentQuestionData = data;
 
-        // Randare LaTeX în cutia de întrebări
-        katex.render(data.q, questionBox, { throwOnError: false, displayMode: true });
+        safeRender(data.q, questionBox);
 
-        // Pregătire Răspunsuri
         let answers = [
-            { type: 'correct', val: data.a },
-            { type: 'wrong', val: data.w1 },
-            { type: 'wrong', val: data.w2 }
+            { val: data.a, type: 'correct' },
+            { val: data.w1, type: 'wrong' },
+            { val: data.w2, type: 'wrong' }
         ];
         answers.sort(() => Math.random() - 0.5);
 
-        // Creare elemente Porți
-        gameState.gates = [];
-        const startY = -200; // Start off-screen
+        state.gates = [];
+        answers.forEach((ans, idx) => {
+            const el = document.createElement('div');
+            el.className = 'gate';
+            const leftPos = [2.5, 36, 69.5];
+            el.style.left = leftPos[idx] + '%';
 
-        answers.forEach((ans, index) => {
-            const gateEl = document.createElement('div');
-            gateEl.className = 'gate';
-            gateEl.style.top = startY + 'px';
+            safeRender(ans.val, el);
 
-            // Poziționare pe benzi
-            if(index === 0) gateEl.style.left = '2.5%'; // Banda 1
-            if(index === 1) gateEl.style.left = '36%';  // Banda 2
-            if(index === 2) gateEl.style.left = '69.5%'; // Banda 3
+            let yPos = -150;
+            el.style.top = yPos + 'px';
 
-            // Render LaTeX în poartă
-            katex.render(ans.val, gateEl, { throwOnError: false });
-
-            gatesContainer.appendChild(gateEl);
-
-            gameState.gates.push({
-                el: gateEl,
-                y: startY,
-                type: ans.type,
-                lane: index,
-                latex: ans.val
-            });
+            gatesContainer.appendChild(el);
+            state.gates.push({ el: el, y: yPos, type: ans.type, lane: idx, val: ans.val });
         });
     }
 
-    // Game Loop
-    function gameLoop() {
-        if(!gameState.active) return;
+    function gameLoop(timestamp) {
+        if (!state.active) return;
 
-        // Muta porțile
-        let gatesPassed = false;
-        let gatesReset = false;
+        const deltaTime = (timestamp - state.lastTime) / 16;
+        state.lastTime = timestamp;
 
-        gameState.gates.forEach(gate => {
-            gate.y += gameState.speed;
+        if (state.paused) {
+            requestAnimationFrame(gameLoop);
+            return;
+        }
+
+        // LOGICĂ VITEZĂ
+        // Dacă e turbo, viteza crește de 5 ori
+        let currentMoveSpeed = state.speed * (state.fastForward ? 5 : 1);
+
+        // Efect vizual Turbo
+        if(state.fastForward) {
+            playerEl.classList.add('player-turbo');
+        } else {
+            playerEl.classList.remove('player-turbo');
+        }
+
+        let nextQuestion = false;
+
+        state.gates.forEach(gate => {
+            gate.y += currentMoveSpeed * (deltaTime || 1);
             gate.el.style.top = gate.y + 'px';
 
             // Coliziune
-            // Player Y is fixed at bottom: 120px from bottom.
-            // Window height matters.
-            const playerRect = player.getBoundingClientRect();
-            const gateRect = gate.el.getBoundingClientRect();
+            const wh = window.innerHeight;
+            const playerTop = wh - 180;
+            const playerBottom = wh - 120;
 
-            // Verificare simplă de suprapunere
-            if (
-                playerRect.left < gateRect.right &&
-                playerRect.right > gateRect.left &&
-                playerRect.top < gateRect.bottom &&
-                playerRect.bottom > gateRect.top
-            ) {
-                if(gate.type === 'correct') {
-                    // Corect!
-                    gatesReset = true;
-                    updateScore(gameState.score + 1);
-                    // Feedback vizual rapid
-                    gate.el.style.background = "rgba(46, 204, 113, 0.8)";
-                } else {
-                    // Greșit
-                    gameOver(gate.latex);
+            if (gate.y + 100 > playerTop && gate.y < playerBottom) {
+                if (gate.lane === state.lane) {
+                    if (gate.type === 'correct') {
+                        nextQuestion = true;
+                        state.score++;
+                        // Creștere mică a vitezei de bază
+                        if(state.score % 5 === 0) state.speed += 0.2;
+                    } else {
+                        handleMistake();
+                    }
                 }
-            }
-
-            // Verificare dacă au ieșit din ecran
-            if(gate.y > window.innerHeight) {
-                gatesPassed = true;
             }
         });
 
-        if (gatesReset) {
-            // Șterge porțile și dă următoarea întrebare
-            gatesContainer.innerHTML = '';
-            gameState.gates = [];
-            spawnQuestion();
-            // Crește viteza ușor
-            if(gameState.score % 3 === 0) gameState.speed += 0.5;
-        } else if (gatesPassed && gameState.active) {
-            // Dacă au trecut de ecran fără să atingă nimic (imposibil tehnic dacă stă pe o bandă, dar ca siguranță)
-             // Ignorăm, ele doar dispar. Dar trebuie să respawnăm dacă toate au trecut.
-             // Verificăm dacă toate au trecut
-             const allPassed = gameState.gates.every(g => g.y > window.innerHeight);
-             if(allPassed) {
-                 // Jucătorul a evitat toate porțile? Asta e Game Over teoretic, trebuie să răspundă.
-                 // Dar design-ul jocului forțează coliziunea dacă nu stă între benzi.
-                 // Vom presupune că a ratat.
-                 gameOver("Niciun răspuns selectat");
-             }
+        const allPassed = state.gates.every(g => g.y > window.innerHeight);
+
+        if (nextQuestion || allPassed) {
+            if (allPassed && !nextQuestion) {
+                handleMistake();
+            } else {
+                updateHUD();
+                gatesContainer.innerHTML = '';
+                spawnQuestion();
+                // Oprim turbo automat când apare întrebare nouă, ca să nu treci prin ea
+                state.fastForward = false;
+                turboBtn.classList.remove('turbo-active-btn');
+            }
         }
 
-        gameState.animationId = requestAnimationFrame(gameLoop);
+        requestAnimationFrame(gameLoop);
     }
 
-    function updateScore(newScore) {
-        gameState.score = newScore;
-        scoreBoard.innerText = gameState.score;
+    function handleMistake() {
+        state.paused = true;
+        state.fastForward = false; // Oprim turbo
+        state.mistakes++;
+        updateHUD();
 
-        const lvl = document.getElementById('level-indicator');
-        if(gameState.score < 5) lvl.innerText = "Nivel: Începător";
-        else if(gameState.score < 15) lvl.innerText = "Nivel: BAC Promovat";
-        else if(gameState.score < 30) lvl.innerText = "Nivel: Bursa de Merit";
-        else lvl.innerText = "Nivel: Olimpic";
+        const fbScreen = document.getElementById('feedback-screen');
+        fbScreen.classList.remove('hidden');
+
+        safeRender(state.currentQuestionData.q, document.getElementById('fb-question'));
+        safeRender(state.currentQuestionData.a, document.getElementById('fb-correct'));
+        document.getElementById('fb-source').innerText = "Sursa: " + state.currentQuestionData.src;
     }
 
-    function gameOver(wrongAnswerLatex) {
-        gameState.active = false;
-        cancelAnimationFrame(gameState.animationId);
-
-        const screen = document.getElementById('game-over-screen');
-        screen.classList.remove('hidden');
-        document.getElementById('final-score').innerText = gameState.score;
-
-        const details = document.getElementById('wrong-answer-details');
-        details.innerHTML = `
-            <h3 style="margin:0 0 10px 0">Întrebarea era:</h3>
-            <div id="go-q" style="margin-bottom:15px"></div>
-            <h3 style="margin:0 0 10px 0; color: #2ecc71">Răspunsul Corect:</h3>
-            <div id="go-a"></div>
-            <p style="font-size:0.8rem; color:#bdc3c7; margin-top:15px">${gameState.question.src}</p>
-        `;
-
-        katex.render(gameState.question.q, document.getElementById('go-q'));
-        katex.render(gameState.question.a, document.getElementById('go-a'));
+    function resumeGame() {
+        document.getElementById('feedback-screen').classList.add('hidden');
+        gatesContainer.innerHTML = '';
+        spawnQuestion();
+        state.paused = false;
+        state.lastTime = performance.now();
     }
 
-    // Controale
-    window.addEventListener('keydown', (e) => {
-        if(e.key === 'ArrowLeft') moveLeft();
-        if(e.key === 'ArrowRight') moveRight();
+    function updateHUD() {
+        document.getElementById('score-board').innerText = "Corecte: " + state.score;
+        document.getElementById('mistakes-board').innerText = "Greșeli: " + state.mistakes;
+    }
+
+    function updatePlayer() {
+        const positions = ['16.66%', '50%', '83.33%'];
+        playerEl.style.left = positions[state.lane];
+        playerEl.style.transform = 'translateX(-50%)';
+    }
+
+    function move(dir) {
+        if (!state.active || state.paused) return;
+        if (dir === -1 && state.lane > 0) state.lane--;
+        if (dir === 1 && state.lane < 2) state.lane++;
+        updatePlayer();
+    }
+
+    /* --- CONTROALE --- */
+
+    // Tastatură
+    window.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft') move(-1);
+        if (e.key === 'ArrowRight') move(1);
+
+        // TURBO: Săgeată SUS
+        if (e.key === 'ArrowUp') {
+            state.fastForward = true;
+            turboBtn.classList.add('turbo-active-btn');
+        }
     });
 
-    // Touch zones
-    window.addEventListener('touchstart', (e) => {
-        if(!gameState.active) return;
+    window.addEventListener('keyup', e => {
+        if (e.key === 'ArrowUp') {
+            state.fastForward = false;
+            turboBtn.classList.remove('turbo-active-btn');
+        }
+    });
+
+    // Mouse/Touch pentru mișcare (partea de sus/mijloc a ecranului)
+    window.addEventListener('mousedown', e => {
+        if(e.target.id === 'turbo-btn' || e.target.tagName === 'BUTTON') return;
+        if(e.clientX < window.innerWidth / 2) move(-1);
+        else move(1);
+    });
+
+    window.addEventListener('touchstart', e => {
+        if(e.target.id === 'turbo-btn' || e.target.tagName === 'BUTTON') return;
         const touchX = e.changedTouches[0].clientX;
-        if(touchX < window.innerWidth / 2) moveLeft();
-        else moveRight();
-    });
+        if(touchX < window.innerWidth / 2) move(-1);
+        else move(1);
+    }, {passive: false});
 
-    // Click zones (pt desktop mouse)
-    window.addEventListener('mousedown', (e) => {
-        if(!gameState.active) return;
-        if(e.clientX < window.innerWidth / 2) moveLeft();
-        else moveRight();
-    });
+    // Controale BUTON TURBO (Touch/Mouse)
+    const startTurbo = (e) => {
+        e.preventDefault(); // previne selectarea textului
+        state.fastForward = true;
+        turboBtn.classList.add('turbo-active-btn');
+    };
+    const stopTurbo = (e) => {
+        e.preventDefault();
+        state.fastForward = false;
+        turboBtn.classList.remove('turbo-active-btn');
+    };
+
+    turboBtn.addEventListener('mousedown', startTurbo);
+    turboBtn.addEventListener('mouseup', stopTurbo);
+    turboBtn.addEventListener('mouseleave', stopTurbo);
+
+    turboBtn.addEventListener('touchstart', startTurbo);
+    turboBtn.addEventListener('touchend', stopTurbo);
 
 </script>
 </body>
