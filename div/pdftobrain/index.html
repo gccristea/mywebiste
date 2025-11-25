@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BAC Math: Audio Edition</title>
+    <title>BAC.</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -13,7 +13,7 @@
         :root {
             --bg-color: #2c3e50;
             --road-color: rgba(255, 255, 255, 0.05);
-            --ui-height: 160px;
+            --ui-height: 180px; /* Am mărit puțin zona de jos */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -66,7 +66,7 @@
         /* --- ÎNTREBĂRI & PORȚI --- */
         #question-box {
             position: absolute;
-            top: 10px; left: 5%; width: 80%; /* Mai îngust să lase loc la butoane audio */
+            top: 10px; left: 5%; width: 80%; 
             background: rgba(255,255,255,0.95);
             padding: 10px; border-radius: 10px;
             text-align: center; font-weight: 600; color: #2c3e50;
@@ -125,7 +125,8 @@
             display: grid;
             grid-template-columns: 1fr 2fr 1fr;
             align-items: center;
-            padding: 10px;
+            /* AICI AM MODIFICAT: Padding jos mai mare (40px) pentru a ridica butoanele */
+            padding: 10px 10px 40px 10px; 
             z-index: 100;
             border-top: 1px solid #34495e;
         }
@@ -213,12 +214,16 @@
     </div>
 
     <div id="start-screen" class="screen">
-        <h1 style="color: #f1c40f;">BAC MATH</h1>
-        <p style="color: #bdc3c7;">Audio Edition</p>
+        <h1 style="color: #f1c40f;">PICI BACUL ?</h1>
+        <p style="color: #bdc3c7;">Joc Interactiv</p>
         <div class="fb-box">
-            <p>Ai nevoie de fișierele audio în folder!</p>
-            <p>🐢 <b>Slow:</b> Ține apăsat</p>
-            <p>🚀 <b>Turbo:</b> Ține apăsat</p>
+            <p>Întrebările sunt generate de AI 🤖 </p> 
+            <p>Conform fișierului: 
+                <a href="./Formule_BAC.pdf" target="_blank" class="pdf-link" style="color: #3498db;">
+                    Formule_BAC.pdf 📄
+                </a>
+            </p>
+            <p>Controlele pe telefon se află în partea de jos. 🕹️</p>
         </div>
         <button class="main-btn" onclick="startGameClick()">START JOC</button>
     </div>
@@ -3051,7 +3056,7 @@
    ];
 
 // --- STATE ---
-    let state = { active: false, paused: false, score: 0, mistakes: 0, lane: 1, speed: 2.5, mod: 'normal', gates: [], qData: null, lastTime: 0 };
+    let state = { active: false, paused: false, score: 0, mistakes: 0, lane: 1, speed: 1, mod: 'normal', gates: [], qData: null, lastTime: 0 };
     const viewport = document.getElementById('game-viewport');
     const player = document.getElementById('player');
     const qBox = document.getElementById('question-box');
@@ -3091,7 +3096,7 @@
 
     function initGame() {
         document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-        state = { active: true, paused: false, score: 0, mistakes: 0, lane: 1, speed: 2.5, mod: 'normal', gates: [], qData: null, lastTime: performance.now() };
+        state = { active: true, paused: false, score: 0, mistakes: 0, lane: 1, speed: 1, mod: 'normal', gates: [], qData: null, lastTime: performance.now() };
         updateHUD(); updatePlayer();
         gContainer.innerHTML = '';
         spawnQ();
@@ -3128,8 +3133,8 @@
         if(state.paused) { requestAnimationFrame(loop); return; }
 
         let spd = state.speed;
-        if(state.mod === 'turbo') spd *= 4;
-        if(state.mod === 'slow') spd *= 0.5;
+        if(state.mod === 'turbo') spd *= 8;
+        if(state.mod === 'slow') spd *= 0.2;
 
         player.className = state.mod === 'turbo' ? 'p-turbo' : (state.mod === 'slow' ? 'p-slow' : '');
 
