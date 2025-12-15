@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Formule.</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+
+    <style>
+        /* --- RESET & LAYOUT --- */
+        :root {
+            --bg-color: #2c3e50;
+            --road-color: rgba(255, 255, 255, 0.05);
+            --ui-height: 180px; /* Am mărit puțin zona de jos */
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            background: linear-gradient(180deg, #1a252f 0%, #000000 100%);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- ZONA DE JOC --- */
+        #game-viewport {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            overflow: hidden;
+            border-bottom: 2px solid #34495e;
+        }
+
+        .road-line {
+            position: absolute;
+            top: 0; bottom: 0; width: 4px;
+            background: var(--road-color);
+            z-index: 0;
+        }
+        .line-1 { left: 33.33%; }
+        .line-2 { left: 66.66%; }
+
+        /* --- JUCĂTOR --- */
+        #player {
+            position: absolute;
+            bottom: 20px;
+            width: 50px; height: 50px;
+            background: #3498db;
+            border-radius: 12px;
+            box-shadow: 0 0 15px #3498db;
+            transition: left 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 10;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .p-turbo { background: #f1c40f !important; box-shadow: 0 0 30px #f1c40f !important; }
+        .p-slow { background: #8e44ad !important; box-shadow: 0 0 30px #9b59b6 !important; opacity: 0.8; }
+
+        /* --- ÎNTREBĂRI & PORȚI --- */
+        #question-box {
+            position: absolute;
+            top: 10px; left: 5%; width: 80%; 
+            background: rgba(255,255,255,0.95);
+            padding: 10px; border-radius: 10px;
+            text-align: center; font-weight: 600; color: #2c3e50;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            z-index: 20;
+            border-bottom: 4px solid #f39c12;
+            font-size: 1rem;
+            min-height: 60px;
+            display: flex; align-items: center; justify-content: center; flex-direction: column;
+        }
+
+        .gate {
+            position: absolute;
+            width: 30%; height: 130px;
+            background: rgba(39, 174, 96, 0.25);
+            border: 2px solid rgba(46, 204, 113, 0.6);
+            border-radius: 10px;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-weight: bold; font-size: 1.1rem;
+            z-index: 5; padding: 5px; text-align: center;
+            backdrop-filter: blur(3px);
+        }
+
+        /* --- HUD & AUDIO --- */
+        .hud {
+            position: absolute; top: 80px; 
+            padding: 5px 10px; border-radius: 15px;
+            color: white; font-weight: bold; font-size: 0.9rem;
+            z-index: 15;
+        }
+        #hud-score { left: 10px; background: #27ae60; }
+        #hud-mistakes { right: 10px; background: #c0392b; }
+
+        /* Butoane Audio Sus-Dreapta */
+        #audio-panel {
+            position: absolute; top: 10px; right: 10px;
+            display: flex; flex-direction: column; gap: 8px;
+            z-index: 50;
+        }
+        .mute-btn {
+            width: 40px; height: 40px;
+            background: rgba(0,0,0,0.6);
+            border: 2px solid #7f8c8d;
+            border-radius: 50%;
+            color: white; font-size: 1.2rem;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mute-active { background: #c0392b; border-color: #e74c3c; }
+
+        /* --- CONTROALE MOBILE (Jos) --- */
+        #mobile-controls {
+            height: var(--ui-height);
+            background: #10151b;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            align-items: center;
+            /* AICI AM MODIFICAT: Padding jos mai mare (40px) pentru a ridica butoanele */
+            padding: 10px 10px 40px 10px; 
+            z-index: 100;
+            border-top: 1px solid #34495e;
+        }
+
+        .action-btn {
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            border: none; font-weight: bold; color: white;
+            font-size: 0.8rem;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            margin: 0 auto;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+        }
+        .btn-slow { background: #8e44ad; border-bottom: 4px solid #6c3483; }
+        .btn-turbo { background: #f1c40f; color: #2c3e50; border-bottom: 4px solid #d35400; }
+        .btn-active { transform: translateY(4px); border-bottom-width: 0 !important; opacity: 0.8; }
+
+        .dir-container {
+            display: flex; justify-content: center; gap: 15px;
+            height: 100%; align-items: center;
+        }
+        .dir-btn {
+            width: 80px; height: 80px;
+            background: #34495e;
+            border-radius: 15px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 2rem; color: #ecf0f1;
+            box-shadow: 0 5px 0 #2c3e50;
+        }
+        .dir-btn:active { transform: translateY(5px); box-shadow: none; background: #2980b9; }
+
+        /* --- ECRANE --- */
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 999; color: white; text-align: center; padding: 20px;
+        }
+        .hidden { display: none !important; }
+
+        .fb-box {
+            background: #2c3e50; padding: 20px; border-radius: 15px;
+            width: 100%; max-width: 400px; margin-bottom: 20px;
+            border: 1px solid #7f8c8d;
+        }
+
+        button.main-btn {
+            padding: 15px 40px; font-size: 1.2rem;
+            background: #27ae60; color: white; border: none; border-radius: 50px;
+            box-shadow: 0 5px 0 #1e8449;
+        }
+        .katex { font-size: 1.1em; }
+    </style>
+</head>
+<body>
+
+    <div id="game-viewport">
+        <div class="road-line line-1"></div>
+        <div class="road-line line-2"></div>
+
+        <div id="audio-panel">
+            <div id="btn-mute-music" class="mute-btn" onclick="toggleMusic()">🎵</div>
+            <div id="btn-mute-sfx" class="mute-btn" onclick="toggleSFX()">🔊</div>
+        </div>
+
+        <div id="hud-score" class="hud">Corecte: 0</div>
+        <div id="hud-mistakes" class="hud">Greșeli: 0</div>
+
+        <div id="question-box">...</div>
+
+        <div id="player">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="white"><path d="M12 2L2 22h20L12 2zm0 3l7.5 15h-15L12 5z"/></svg>
+        </div>
+
+        <div id="gates-container"></div>
+    </div>
+
+    <div id="mobile-controls">
+        <div class="action-btn btn-slow" id="btn-slow"><span>🐢</span><span>SLOW</span></div>
+        <div class="dir-container">
+            <div class="dir-btn" id="btn-left">⬅️</div>
+            <div class="dir-btn" id="btn-right">➡️</div>
+        </div>
+        <div class="action-btn btn-turbo" id="btn-turbo"><span>🚀</span><span>TURBO</span></div>
+    </div>
+
+    <div id="start-screen" class="screen">
+        <h1 style="color: #f1c40f;">Am skill issue ?</h1>
+        <p style="color: #bdc3c7;">Joc Interactiv</p>
+        <div class="fb-box">
+            <p>Doar derivare si integrale</p> 
+            <p>Conform fișierului: 
+                <a href="./Formule_BAC.pdf" target="_blank" class="pdf-link" style="color: #3498db;">
+                    Formule_BAC.pdf 📄
+                </a>
+            </p>
+            <p>Controlele pe telefon se află în partea de jos. 🕹️</p>
+        </div>
+        <button class="main-btn" onclick="startGameClick()">START JOC</button>
+    </div>
+
+    <div id="feedback-screen" class="screen hidden">
+        <h2 style="color: #e74c3c;">AI GREȘIT!</h2>
+        <div class="fb-box">
+            <p style="font-size:0.8rem; color:#95a5a6">Întrebarea:</p>
+            <div id="fb-q" style="margin-bottom:15px; font-size:1.1rem"></div>
+            <hr style="border-color:#34495e">
+            <p style="font-size:0.8rem; color:#27ae60; font-weight:bold">Corect:</p>
+            <div id="fb-a" style="font-size:1.3rem; color:#2ecc71"></div>
+            <p id="fb-src" style="font-size:0.7rem; text-align:right; color:#7f8c8d; margin-top:10px"></p>
+        </div>
+        <button class="main-btn" style="background:#3498db" onclick="resumeGame()">CONTINUĂ</button>
+    </div>
+
+<script>
+    /* --- AUDIO SYSTEM --- */
+    const audioFiles = {
+        bg: new Audio('./fundal.mp3'),
+        start: new Audio('./inceput.mp3'),
+        correct: new Audio('./corect.mp3'),
+        wrong: new Audio('./gresit.mp3')
+    };
+
+    // Setări inițiale
+    audioFiles.bg.loop = true;
+    audioFiles.bg.volume = 0.5; // Muzica la 50% volum
+
+    let isMusicMuted = false;
+    let isSFXMuted = false;
+
+    function playSound(type) {
+        if (type === 'bg') {
+            if (!isMusicMuted) {
+                audioFiles.bg.play().catch(e => console.log("Audio play failed (user interaction needed)", e));
+            }
+        } else {
+            // SFX
+            if (!isSFXMuted) {
+                // Clonăm sunetul pentru a permite suprapunerea (rapid fire)
+                const sfx = audioFiles[type].cloneNode();
+                sfx.play().catch(e => {});
+            }
+        }
+    }
+
+    function toggleMusic() {
+        isMusicMuted = !isMusicMuted;
+        const btn = document.getElementById('btn-mute-music');
+        if (isMusicMuted) {
+            audioFiles.bg.pause();
+            btn.innerHTML = '🚫';
+            btn.classList.add('mute-active');
+        } else {
+            audioFiles.bg.play();
+            btn.innerHTML = '🎵';
+            btn.classList.remove('mute-active');
+        }
+    }
+
+    function toggleSFX() {
+        isSFXMuted = !isSFXMuted;
+        const btn = document.getElementById('btn-mute-sfx');
+        if (isSFXMuted) {
+            btn.innerHTML = '🔇';
+            btn.classList.add('mute-active');
+        } else {
+            btn.innerHTML = '🔊';
+            btn.classList.remove('mute-active');
+        }
+    }
+const database = [
+        // --- 1. DERIVATE (Clasa XI) ---
+        { cat: 'derivate', q: "c'", a: "0", w1: "1", w2: "x" },
+        { cat: 'derivate', q: "x'", a: "1", w1: "0", w2: "x" },
+        { cat: 'derivate', q: "(x^n)'", a: "nx^{n-1}", w1: "\\frac{x^{n+1}}{n+1}", w2: "x^n" },
+        { cat: 'derivate', q: "(\\sqrt{x})'", a: "\\frac{1}{2\\sqrt{x}}", w1: "\\frac{1}{\\sqrt{x}}", w2: "2\\sqrt{x}" },
+        { cat: 'derivate', q: "(\\sqrt[3]{x})'", a: "\\frac{1}{3\\sqrt[3]{x^2}}", w1: "\\frac{1}{3\\sqrt{x}}", w2: "\\sqrt[3]{x}" },
+        { cat: 'derivate', q: "(a^x)'", a: "a^x \\ln a", w1: "x a^{x-1}", w2: "a^x" },
+        { cat: 'derivate', q: "(e^x)'", a: "e^x", w1: "xe^{x-1}", w2: "\\ln x" },
+        { cat: 'derivate', q: "(\\ln x)'", a: "\\frac{1}{x}", w1: "e^x", w2: "\\ln x" },
+        { cat: 'derivate', q: "(\\log_a x)'", a: "\\frac{1}{x \\ln a}", w1: "\\frac{1}{x}", w2: "a^x \\ln a" },
+        { cat: 'derivate', q: "(\\sin x)'", a: "\\cos x", w1: "-\\cos x", w2: "-\\sin x" },
+        { cat: 'derivate', q: "(\\cos x)'", a: "-\\sin x", w1: "\\sin x", w2: "\\cos x" },
+        { cat: 'derivate', q: "(\\text{tg} x)'", a: "\\frac{1}{\\cos^2 x}", w1: "\\frac{1}{\\sin^2 x}", w2: "\\text{ctg} x" },
+        { cat: 'derivate', q: "(\\text{ctg} x)'", a: "-\\frac{1}{\\sin^2 x}", w1: "\\frac{1}{\\cos^2 x}", w2: "-\\text{tg} x" },
+        { cat: 'derivate', q: "(\\arcsin x)'", a: "\\frac{1}{\\sqrt{1-x^2}}", w1: "\\frac{1}{1+x^2}", w2: "-\\frac{1}{\\sqrt{1-x^2}}" },
+        { cat: 'derivate', q: "(\\text{arctg} x)'", a: "\\frac{1}{1+x^2}", w1: "\\frac{1}{\\sqrt{1-x^2}}", w2: "\\text{arcctg } x" },
+        { cat: 'derivate', q: "(f \\cdot g)'", a: "f'g + fg'", w1: "f'g - fg'", w2: "f'g'" },
+        { cat: 'derivate', q: "\\left(\\frac{f}{g}\\right)'", a: "\\frac{f'g - fg'}{g^2}", w1: "\\frac{f'g + fg'}{g^2}", w2: "\\frac{f'}{g'}" },
+        { cat: 'derivate', q: "(f(u(x)))'", a: "f'(u) \\cdot u'(x)", w1: "f'(u) + u'(x)", w2: "f'(x) \\cdot u'(x)" },
+
+        // --- 2. INTEGRALE NEDEFINITE (Clasa XII - Tabel) ---
+        { cat: 'int_nedef', q: "\\int 1 dx", a: "x", w1: "1", w2: "0" },
+        { cat: 'int_nedef', q: "\\int x^n dx", a: "\\frac{x^{n+1}}{n+1}", w1: "nx^{n-1}", w2: "x^{n+1}" },
+        { cat: 'int_nedef', q: "\\int \\frac{1}{x} dx", a: "\\ln|x|", w1: "-\\frac{1}{x^2}", w2: "e^x" },
+        { cat: 'int_nedef', q: "\\int e^x dx", a: "e^x", w1: "xe^x", w2: "\\ln x" },
+        { cat: 'int_nedef', q: "\\int a^x dx", a: "\\frac{a^x}{\\ln a}", w1: "a^x \\ln a", w2: "x a^{x-1}" },
+        { cat: 'int_nedef', q: "\\int \\sin x dx", a: "-\\cos x", w1: "\\cos x", w2: "\\sin x" },
+        { cat: 'int_nedef', q: "\\int \\cos x dx", a: "\\sin x", w1: "-\\sin x", w2: "\\cos x" },
+        { cat: 'int_nedef', q: "\\int \\frac{1}{\\cos^2 x} dx", a: "\\text{tg} x", w1: "\\text{ctg} x", w2: "-\\text{tg} x" },
+        { cat: 'int_nedef', q: "\\int \\frac{1}{\\sin^2 x} dx", a: "-\\text{ctg} x", w1: "\\text{tg} x", w2: "\\text{ctg} x" },
+        { cat: 'int_nedef', q: "\\int \\frac{1}{x^2+a^2} dx", a: "\\frac{1}{a}\\text{arctg}\\frac{x}{a}", w1: "\\frac{1}{2a}\\ln\\frac{x-a}{x+a}", w2: "\\arcsin\\frac{x}{a}" },
+        { cat: 'int_nedef', q: "\\int \\frac{1}{x^2-a^2} dx", a: "\\frac{1}{2a}\\ln\\left|\\frac{x-a}{x+a}\\right|", w1: "\\frac{1}{a}\\text{arctg}\\frac{x}{a}", w2: "\\ln(x+\\sqrt{x^2-a^2})" },
+        { cat: 'int_nedef', q: "\\int \\frac{1}{\\sqrt{a^2-x^2}} dx", a: "\\arcsin\\frac{x}{a}", w1: "\\ln(x+\\sqrt{a^2-x^2})", w2: "\\text{arctg}\\frac{x}{a}" },
+        { cat: 'int_nedef', q: "\\int \\frac{1}{\\sqrt{x^2+a^2}} dx", a: "\\ln(x+\\sqrt{x^2+a^2})", w1: "\\arcsin\\frac{x}{a}", w2: "\\frac{1}{a}\\text{arctg } x" },
+
+        // --- 3. INTEGRALE DEFINITE & APLICAȚII (Clasa XII) ---
+        { cat: 'int_def', q: "\\text{Leibniz-Newton}", a: "F(b) - F(a)", w1: "F(b) + F(a)", w2: "f(b) - f(a)" },
+        { cat: 'int_def', q: "\\int_a^a f(x) dx", a: "0", w1: "1", w2: "a" },
+        { cat: 'int_def', q: "\\int_a^b f(x) dx", a: "-\\int_b^a f(x) dx", w1: "\\int_b^a f(x) dx", w2: "\\frac{1}{\\int_b^a f(x)}" },
+        { cat: 'int_def', q: "\\int_{-a}^a f(x) dx, f \\text{ impară}", a: "0", w1: "2\\int_0^a f(x)", w2: "1" },
+        { cat: 'int_def', q: "\\int_{-a}^a f(x) dx, f \\text{ pară}", a: "2\\int_0^a f(x) dx", w1: "0", w2: "\\frac{1}{2}\\int_0^a f(x)" },
+        { cat: 'int_def', q: "\\text{Aria } \\Gamma_f", a: "\\int_a^b |f(x)| dx", w1: "\\pi \\int_a^b f^2(x) dx", w2: "\\int_a^b f(x) dx" },
+        { cat: 'int_def', q: "\\text{Aria între } f, g", a: "\\int_a^b |f(x)-g(x)| dx", w1: "\\int_a^b (f(x)-g(x)) dx", w2: "\\int |f+g|" },
+        { cat: 'int_def', q: "\\text{Volumul } C_f", a: "\\pi \\int_a^b f^2(x) dx", w1: "\\int_a^b |f(x)| dx", w2: "2\\pi \\int_a^b f(x) dx" },
+        { cat: 'int_def', q: "\\text{Teorema de medie}", a: "\\int_a^b f(x)dx = (b-a)f(\\xi)", w1: "f(\\xi) = \\int f(x)", w2: "f'(\\xi) = f(b)-f(a)" },
+        { cat: 'int_def', q: "\\text{Integrare prin părți (Definită)}", a: "f(x)g(x)|_a^b - \\int_a^b f(x)g'(x) dx", w1: "f(x)g(x) - \\int f'(x)g(x)", w2: "fg|_a^b + \\int fg'" }
+    ];
+// --- STATE ---
+    let state = { active: false, paused: false, score: 0, mistakes: 0, lane: 1, speed: 1, mod: 'normal', gates: [], qData: null, lastTime: 0 };
+    const viewport = document.getElementById('game-viewport');
+    const player = document.getElementById('player');
+    const qBox = document.getElementById('question-box');
+    const gContainer = document.getElementById('gates-container');
+
+    // --- RENDERER ---
+    function safeRender(content, el) {
+        el.innerHTML = '';
+        if(!window.katex || !content) { el.innerText = content || ""; return; }
+
+        if(content.includes('$')) {
+            const parts = content.split('$');
+            parts.forEach((part, i) => {
+                const span = document.createElement('span');
+                if(i % 2 === 1) { 
+                    try { katex.render(part, span, {throwOnError:false}); } catch(e){ span.innerText=part; }
+                    span.style.margin = "0 2px";
+                } else { 
+                    span.innerText = part;
+                }
+                el.appendChild(span);
+            });
+        } else if(content.includes('\\') || content.includes('^')) {
+            try { katex.render(content, el, {throwOnError:false}); } catch(e){ el.innerText=content; }
+        } else {
+            el.innerText = content;
+        }
+    }
+
+    // --- GAME LOGIC ---
+    function startGameClick() {
+        // Pornim sunetele la interacțiunea userului
+        playSound('start');
+        playSound('bg');
+        initGame();
+    }
+
+    function initGame() {
+        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+        state = { active: true, paused: false, score: 0, mistakes: 0, lane: 1, speed: 1, mod: 'normal', gates: [], qData: null, lastTime: performance.now() };
+        updateHUD(); updatePlayer();
+        gContainer.innerHTML = '';
+        spawnQ();
+        requestAnimationFrame(loop);
+    }
+
+    function spawnQ() {
+        const d = database[Math.floor(Math.random() * database.length)];
+        state.qData = d;
+        safeRender(d.q, qBox);
+
+        let opts = [{v:d.a, t:'ok'}, {v:d.w1, t:'bad'}, {v:d.w2, t:'bad'}];
+        opts.sort(() => Math.random()-0.5);
+
+        state.gates = [];
+        opts.forEach((opt, i) => {
+            const g = document.createElement('div');
+            g.className = 'gate';
+            g.style.left = (i===0 ? 2 : i===1 ? 35 : 68) + '%';
+            safeRender(opt.v, g);
+            
+            let y = -200; 
+            g.style.top = y + 'px';
+            gContainer.appendChild(g);
+            state.gates.push({el:g, y:y, t:opt.t, lane:i});
+        });
+    }
+
+    function loop(timestamp) {
+        if(!state.active) return;
+        const dt = (timestamp - state.lastTime) / 16;
+        state.lastTime = timestamp;
+
+        if(state.paused) { requestAnimationFrame(loop); return; }
+
+        let spd = state.speed;
+        if(state.mod === 'turbo') spd *= 8;
+        if(state.mod === 'slow') spd *= 0.2;
+
+        player.className = state.mod === 'turbo' ? 'p-turbo' : (state.mod === 'slow' ? 'p-slow' : '');
+
+        let next = false;
+        const vh = viewport.offsetHeight;
+        
+        state.gates.forEach(g => {
+            g.y += spd * dt;
+            g.el.style.top = g.y + 'px';
+
+            const gateBottom = g.y + 130;
+            const playerTop = vh - 70; 
+            
+            if(gateBottom > playerTop && g.y < vh - 20) {
+                if(g.lane === state.lane && !next) {
+                    if(g.t === 'ok') {
+                        next = true; state.score++;
+                        playSound('correct');
+                        if(state.score % 5 === 0) state.speed += 0.2;
+                        g.el.style.background = "#2ecc71";
+                    } else {
+                        fail();
+                    }
+                }
+            }
+        });
+
+        if(next || state.gates.every(g => g.y > vh)) {
+            if(!next && state.gates.every(g => g.y > vh)) {
+                fail();
+            } else if(next) {
+                updateHUD();
+                gContainer.innerHTML = '';
+                spawnQ();
+            }
+        }
+
+        requestAnimationFrame(loop);
+    }
+
+    function fail() {
+        state.paused = true; state.mistakes++; updateHUD();
+        playSound('wrong');
+        document.getElementById('feedback-screen').classList.remove('hidden');
+        safeRender(state.qData.q, document.getElementById('fb-q'));
+        safeRender(state.qData.a, document.getElementById('fb-a'));
+        document.getElementById('fb-src').innerText = "Sursa: " + state.qData.src;
+    }
+
+    function resumeGame() {
+        document.getElementById('feedback-screen').classList.add('hidden');
+        gContainer.innerHTML = '';
+        spawnQ();
+        state.paused = false;
+        state.lastTime = performance.now();
+    }
+
+    function updateHUD() {
+        document.getElementById('hud-score').innerText = "Corecte: " + state.score;
+        document.getElementById('hud-mistakes').innerText = "Greșeli: " + state.mistakes;
+    }
+
+    function updatePlayer() {
+        const pos = [16.66, 50, 83.33];
+        player.style.left = pos[state.lane] + '%';
+        player.style.transform = 'translateX(-50%)';
+    }
+
+    function setLane(dir) {
+        if(!state.active || state.paused) return;
+        state.lane = Math.max(0, Math.min(2, state.lane + dir));
+        updatePlayer();
+    }
+
+    // --- CONTROLS ---
+    const btnLeft = document.getElementById('btn-left');
+    const btnRight = document.getElementById('btn-right');
+    const btnSlow = document.getElementById('btn-slow');
+    const btnTurbo = document.getElementById('btn-turbo');
+
+    const press = (btn) => btn.classList.add('btn-active');
+    const release = (btn) => btn.classList.remove('btn-active');
+
+    btnLeft.addEventListener('touchstart', (e) => { e.preventDefault(); press(btnLeft); setLane(-1); });
+    btnLeft.addEventListener('touchend', (e) => { e.preventDefault(); release(btnLeft); });
+    btnLeft.addEventListener('mousedown', () => { press(btnLeft); setLane(-1); });
+    btnLeft.addEventListener('mouseup', () => release(btnLeft));
+
+    btnRight.addEventListener('touchstart', (e) => { e.preventDefault(); press(btnRight); setLane(1); });
+    btnRight.addEventListener('touchend', (e) => { e.preventDefault(); release(btnRight); });
+    btnRight.addEventListener('mousedown', () => { press(btnRight); setLane(1); });
+    btnRight.addEventListener('mouseup', () => release(btnRight));
+
+    const setMod = (mod, btn) => { state.mod = mod; press(btn); };
+    const resetMod = (btn) => { state.mod = 'normal'; release(btn); };
+
+    btnTurbo.addEventListener('touchstart', (e) => { e.preventDefault(); setMod('turbo', btnTurbo); });
+    btnTurbo.addEventListener('touchend', (e) => { e.preventDefault(); resetMod(btnTurbo); });
+    btnTurbo.addEventListener('mousedown', () => setMod('turbo', btnTurbo));
+    btnTurbo.addEventListener('mouseup', () => resetMod(btnTurbo));
+    btnTurbo.addEventListener('mouseleave', () => resetMod(btnTurbo));
+
+    btnSlow.addEventListener('touchstart', (e) => { e.preventDefault(); setMod('slow', btnSlow); });
+    btnSlow.addEventListener('touchend', (e) => { e.preventDefault(); resetMod(btnSlow); });
+    btnSlow.addEventListener('mousedown', () => setMod('slow', btnSlow));
+    btnSlow.addEventListener('mouseup', () => resetMod(btnSlow));
+    btnSlow.addEventListener('mouseleave', () => resetMod(btnSlow));
+
+    window.addEventListener('keydown', (e) => {
+        if(e.repeat) return;
+        if(e.key === 'ArrowLeft') { press(btnLeft); setLane(-1); }
+        if(e.key === 'ArrowRight') { press(btnRight); setLane(1); }
+        if(e.key === 'ArrowUp') setMod('turbo', btnTurbo);
+        if(e.key === 'ArrowDown') setMod('slow', btnSlow);
+    });
+    window.addEventListener('keyup', (e) => {
+        if(e.key === 'ArrowLeft') release(btnLeft);
+        if(e.key === 'ArrowRight') release(btnRight);
+        if(e.key === 'ArrowUp') resetMod(btnTurbo);
+        if(e.key === 'ArrowDown') resetMod(btnSlow);
+    });
+
+</script>
+</body>
+</html>
