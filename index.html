@@ -232,7 +232,6 @@
           🎓 12th grade<br>
           ⏱️ you wasted <span id="timer">0</span><br>
  <a href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" style="text-decoration: none; color: inherit;">
-          ❓ <br>
   🔙 <span>Home</span> <br>
 </a>
 
@@ -244,43 +243,21 @@
   <div class="container static-links">
     <div class="link-row">
       <a class="static-link" href="./pages/about" target="_blank"><div class="emoji">👤</div><div class="label">About</div></a>
-      <a class="static-link" href="./pages/credits" target="_blank"><div class="emoji">💾</div><div class="label">Credits</div></a>
+      <a class="static-link" href="./pages/projects" target="_blank"><div class="emoji">💾</div><div class="label">Projects</div></a>
       <a class="static-link" href="./pages/contact" target="_blank"><div class="emoji">📨</div><div class="label">Contact</div></a>
     </div>
   </div>
 
  <div class="container" id="articleListContainer">
         <div class="file-list" id="fileList">
-          <p>Random Stuff:</p>
+          <p>My Favorites</p>
         <div class="file-entry">
             <span>2025-11-25</span>
-            <a href="./div/pdftobrain/index.html">BAC MATH</a>
+            <a href="./div/mathbrain">BAC MATH</a>
         </div>
         <div class="file-entry">
             <span>2025-09-02</span>
-            <a href="./div/lol/index.html">IP</a>
-        </div>
-        <div class="file-entry">
-            <span>2024-03-10</span>
-            <a href="./div/quiz/index.html">quiz</a>
-        </div>
-
-        <div class="file-entry">
-            <span>2024-02-25</span>
-            <a href="./div/online/index.html">online</a>
-        </div>
-        
-        <div class="file-entry">
-            <span>2024-01-01</span>
-            <a href="./div/template/index.html">template</a>
-        </div>
-        
-        </div>
-        <div class="pagination">
-      <button disabled>◀ Prev</button>
-      <span class="page-number">Page 1 of 1</span>
-      <button disabled>Next ▶</button>
-    </div>
+            <a href="./div/lol">IP</a>
   </div>
 
 <script>
@@ -307,11 +284,8 @@
 
   window.addEventListener('DOMContentLoaded', () => {
     image.src = getRandomImage();
-    // Removed all dynamic fetching/rendering logic
   });
 
-
-// REMOVED: fetchArticles, renderFolders, and changePage functions
 
   let seconds = 0;
   const timerElement = document.getElementById('timer');

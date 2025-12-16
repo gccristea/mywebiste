@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Terminal Quiz</title>
+  <style>
+    @font-face {
+      font-family: "FiraCodeNerdFontMono";
+      src: url("/fonts/FiraCodeNerdFontMono-Medium.ttf") format("truetype");
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: black;
+      color: #00ff00;
+      font-family: "FiraCodeNerdFontMono", "Fira Code", monospace;
+      font-size: 16px;
+      font-weight: bold;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Header Styles */
+    .quiz-header {
+      border: 3px solid #00ff00;
+      padding: 30px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .quiz-header h1 {
+      font-size: 40px;
+      margin-bottom: 15px;
+    }
+
+    .quiz-header p {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .quiz-info {
+      font-size: 14px !important;
+      margin-top: 15px;
+    }
+
+    .highlight {
+      background-color: #00ff00;
+      color: black;
+      padding: 5px 10px;
+    }
+
+    /* Question Styles */
+    .question-container {
+      border: 3px solid #00ff00;
+      padding: 30px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+    }
+
+    .question-header {
+      font-size: 20px;
+      margin-bottom: 25px;
+    }
+
+    .question-number {
+      background-color: #00ff00;
+      color: black;
+      padding: 5px 10px;
+      margin-right: 15px;
+    }
+
+    /* Single Choice Styles */
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 5px;
+      transition: background-color 0.2s;
+    }
+
+    .radio-option:hover {
+      background-color: rgba(0, 255, 0, 0.1);
+    }
+
+    .radio-option input[type="radio"] {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #00ff00;
+      background-color: black;
+      cursor: pointer;
+    }
+
+    .radio-option input[type="radio"]:checked {
+      background-color: #00ff00;
+    }
+
+    /* Multiple Choice Styles */
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .checkbox-option {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 5px;
+      transition: background-color 0.2s;
+    }
+
+    .checkbox-option:hover {
+      background-color: rgba(0, 255, 0, 0.1);
+    }
+
+    .checkbox-option input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #00ff00;
+      background-color: black;
+      cursor: pointer;
+    }
+
+    .checkbox-option input[type="checkbox"]:checked {
+      background-color: #00ff00;
+    }
+
+    /* Line Connection Styles */
+    .line-connect-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .line-connect-instructions {
+      color: #00cc00;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .line-connect-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+
+    .line-connect-column {
+      border: 2px solid #00ff00;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .line-connect-column h3 {
+      font-size: 18px;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    .line-connect-items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .line-connect-item {
+      padding: 15px;
+      border: 2px solid #00ff00;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+    }
+
+    .line-connect-item:hover {
+      background-color: rgba(0, 255, 0, 0.1);
+    }
+
+    .line-connect-item.selected {
+      background-color: #00ff00;
+      color: black;
+    }
+
+    .line-connect-item.connected {
+      background-color: rgba(0, 255, 0, 0.2);
+    }
+
+    .line-connect-item.disabled {
+      border-color: #666;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    .connection-info {
+      font-size: 12px;
+      margin-top: 5px;
+      color: #00cc00;
+    }
+
+    .selected-info {
+      text-align: center;
+      color: #ffff00;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+
+    /* Submit Button Styles */
+    .submit-container {
+      text-align: center;
+      border: 3px solid #00ff00;
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+
+    .submit-btn {
+      background-color: #00ff00;
+      color: black;
+      border: none;
+      padding: 15px 40px;
+      font-size: 20px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background-color 0.2s;
+    }
+
+    .submit-btn:hover {
+      background-color: #00cc00;
+    }
+
+    .submit-info {
+      font-size: 14px;
+      margin-top: 15px;
+    }
+
+    /* Results Styles */
+    .results-container {
+      text-align: center;
+    }
+
+    .results-header {
+      border: 3px solid #00ff00;
+      padding: 40px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+    }
+
+    .results-header h1 {
+      font-size: 40px;
+      margin-bottom: 20px;
+    }
+
+    .score-display {
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+
+    .performance-message {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .performance-message.excellent {
+      color: #00ff00;
+    }
+
+    .performance-message.good {
+      color: #ffff00;
+    }
+
+    .performance-message.needs-improvement {
+      color: #ff6666;
+    }
+
+    .incorrect-answers {
+      border: 3px solid #00ff00;
+      padding: 30px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+    }
+
+    .incorrect-answers h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .incorrect-item {
+      background-color: rgba(0, 255, 0, 0.1);
+      border: 2px solid #00ff00;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    .incorrect-question {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .user-answer {
+      color: #ff6666;
+      margin-bottom: 5px;
+    }
+
+    .correct-answer {
+      color: #00ff00;
+    }
+
+    .restart-container {
+      text-align: center;
+    }
+
+    .restart-btn {
+      background-color: #00ff00;
+      color: black;
+      border: none;
+      padding: 15px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background-color 0.2s;
+    }
+
+    .restart-btn:hover {
+      background-color: #00cc00;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .line-connect-columns {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      /* Removed .drop-zones from here as well */
+
+      .quiz-header h1 {
+        font-size: 28px;
+      }
+
+      .question-header {
+        font-size: 18px;
+      }
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: black;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #00ff00;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00cc00;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="quiz-header">
+      <h1><span class="highlight">TEST QUIZ</span></h1>
+      <p>some template for later use.</p>
+      <p class="quiz-info">Answer all <span id="total-questions">20</span> questions below and submit when ready</p>
+    </div>
+
+    <div id="quiz-container" class="quiz-container">
+      </div>
+
+    <div class="submit-container">
+      <button id="submit-btn" class="submit-btn">[SUBMIT QUIZ]</button>
+      <p class="submit-info">Make sure you've answered all questions before submitting!</p>
+    </div>
+
+    <div id="results-container" class="results-container" style="display: none;">
+      <div class="results-header">
+        <h1><span class="highlight">QUIZ COMPLETE</span></h1>
+        <div id="score-display" class="score-display"></div>
+        <div id="performance-message" class="performance-message"></div>
+      </div>
+
+      <div id="incorrect-answers" class="incorrect-answers" style="display: none;">
+        <h2><span class="highlight">INCORRECT ANSWERS</span></h2>
+        <div id="incorrect-list"></div>
+      </div>
+
+      <div class="restart-container">
+        <button id="restart-btn" class="restart-btn">[RESTART QUIZ]</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        id: 1,
+        type: "single",
+        question: "What is the capital of Japan?",
+        options: ["Seoul", "Tokyo", "Beijing", "Bangkok"],
+        correctAnswers: "Tokyo",
+      },
+      {
+        id: 2,
+        type: "multiple",
+        question: "Which of the following are programming languages? (Select all that apply)",
+        options: ["JavaScript", "HTML", "Python", "CSS", "Java"],
+        correctAnswers: ["JavaScript", "Python", "Java"],
+      },
+      {
+        id: 3,
+        type: "single",
+        question: "What is 2 + 2?",
+        options: ["3", "4", "5", "6"],
+        correctAnswers: "4",
+      },
+      {
+        id: 4,
+        type: "multiple",
+        question: "Which of these are primary colors? (Select all that apply)",
+        options: ["Red", "Green", "Blue", "Yellow", "Purple"],
+        correctAnswers: ["Red", "Blue", "Yellow"],
+      },
+      {
+        id: 5,
+        type: "single",
+        question: 'Who wrote "Romeo and Juliet"?',
+        options: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
+        correctAnswers: "William Shakespeare",
+      },
+      {
+        id: 6,
+        type: "line-connect",
+        question: "Connect each country to its capital city:",
+        columnA: [
+          { id: "france", text: "France" },
+          { id: "italy", text: "Italy" },
+          { id: "germany", text: "Germany" },
+          { id: "spain", text: "Spain" },
+        ],
+        columnB: [
+          { id: "berlin", text: "Berlin" },
+          { id: "madrid", text: "Madrid" },
+          { id: "paris", text: "Paris" },
+          { id: "rome", text: "Rome" },
+        ],
+        correctAnswers: {
+          france: "paris",
+          italy: "rome",
+          germany: "berlin",
+          spain: "madrid",
+        },
+      },
+      {
+        id: 7,
+        type: "single",
+        question: "What is the largest planet in our solar system?",
+        options: ["Saturn", "Jupiter", "Neptune", "Earth"],
+        correctAnswers: "Jupiter",
+      },
+      {
+        id: 8,
+        type: "multiple",
+        question: "Which of these are web browsers? (Select all that apply)",
+        options: ["Chrome", "Firefox", "Photoshop", "Safari", "Excel"],
+        correctAnswers: ["Chrome", "Firefox", "Safari"],
+      },
+      {
+        id: 9,
+        type: "line-connect",
+        question: "Match each programming language to its primary use:",
+        columnA: [
+          { id: "html", text: "HTML" },
+          { id: "css", text: "CSS" },
+          { id: "javascript", text: "JavaScript" },
+          { id: "sql", text: "SQL" },
+        ],
+        columnB: [
+          { id: "styling", text: "Styling" },
+          { id: "structure", text: "Structure" },
+          { id: "database", text: "Database" },
+          { id: "interactivity", text: "Interactivity" },
+        ],
+        correctAnswers: {
+          html: "structure",
+          css: "styling",
+          javascript: "interactivity",
+          sql: "database",
+        },
+      },
+      {
+        id: 10,
+        type: "line-connect",
+        question: "Connect each mathematical operation to its symbol:",
+        columnA: [
+          { id: "addition", text: "Addition" },
+          { id: "subtraction", text: "Subtraction" },
+          { id: "multiplication", text: "Multiplication" },
+          { id: "division", text: "Division" },
+        ],
+        columnB: [
+          { id: "plus", text: "+" },
+          { id: "minus", text: "-" },
+          { id: "times", text: "×" },
+          { id: "divide", text: "÷" },
+        ],
+        correctAnswers: {
+          addition: "plus",
+          subtraction: "minus",
+          multiplication: "times",
+          division: "divide",
+        },
+      },
+      
+    ]
+
+    // Global variables
+    let answers = {}
+    let selectedColumnA = null
+
+    // Initialize the quiz
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("total-questions").textContent = questions.length
+      generateQuiz()
+      setupEventListeners()
+    })
+
+    // Generate the quiz HTML
+    function generateQuiz() {
+      const container = document.getElementById("quiz-container")
+      container.innerHTML = ""
+
+      questions.forEach((question, index) => {
+        const questionDiv = document.createElement("div")
+        questionDiv.className = "question-container"
+        questionDiv.innerHTML = generateQuestionHTML(question, index)
+        container.appendChild(questionDiv)
+      })
+
+      // Setup line connect after HTML is generated
+      setupLineConnect()
+    }
+
+    // Generate HTML for different question types
+    function generateQuestionHTML(question, index) {
+      let html = `
+        <div class="question-header">
+          <span class="question-number">Q${index + 1}</span>
+          ${question.question}
+        </div>
+      `
+
+      switch (question.type) {
+        case "single":
+          html += generateSingleChoiceHTML(question)
+          break
+        case "multiple":
+          html += generateMultipleChoiceHTML(question)
+          break
+        case "line-connect":
+          html += generateLineConnectHTML(question)
+          break
+      }
+
+      return html
+    }
+
+    // Generate single choice question HTML
+    function generateSingleChoiceHTML(question) {
+      let html = '<div class="radio-group">'
+      question.options.forEach((option, index) => {
+        html += `
+          <label class="radio-option">
+            <input type="radio" name="q${question.id}" value="${option}" onchange="handleSingleAnswer(${question.id}, '${option}')">
+            <span>${option}</span>
+          </label>
+        `
+      })
+      html += "</div>"
+      return html
+    }
+
+    // Generate multiple choice question HTML
+    function generateMultipleChoiceHTML(question) {
+      let html = '<div class="checkbox-group">'
+      question.options.forEach((option, index) => {
+        html += `
+          <label class="checkbox-option">
+            <input type="checkbox" name="q${question.id}" value="${option}" onchange="handleMultipleAnswer(${question.id}, '${option}', this.checked)">
+            <span>${option}</span>
+          </label>
+        `
+      })
+      html += "</div>"
+      return html
+    }
+
+    // Generate line connect question HTML
+    function generateLineConnectHTML(question) {
+      let html = `
+        <div class="line-connect-container">
+          <div class="line-connect-instructions">
+            Click an item from Column A, then click the matching item from Column B to connect them.
+          </div>
+          <div class="line-connect-columns">
+            <div class="line-connect-column">
+              <h3>Column A</h3>
+              <div class="line-connect-items">
+      `
+
+      question.columnA.forEach((item) => {
+        html += `
+          <div class="line-connect-item" data-question-id="${question.id}" data-column="A" data-item-id="${item.id}">
+            ${item.text}
+            <div class="connection-info" id="connection-${question.id}-${item.id}"></div>
+          </div>
+        `
+      })
+
+      html += `
+              </div>
+            </div>
+            <div class="line-connect-column">
+              <h3>Column B</h3>
+              <div class="line-connect-items">
+      `
+
+      question.columnB.forEach((item) => {
+        html += `
+          <div class="line-connect-item" data-question-id="${question.id}" data-column="B" data-item-id="${item.id}">
+            ${item.text}
+          </div>
+        `
+      })
+
+      html += `
+              </div>
+            </div>
+          </div>
+          <div class="selected-info" id="selected-info-${question.id}"></div>
+        </div>
+      `
+
+      return html
+    }
+
+    // Event handlers
+    function handleSingleAnswer(questionId, answer) {
+      answers[questionId] = answer
+    }
+
+    function handleMultipleAnswer(questionId, option, checked) {
+      if (!answers[questionId]) {
+        answers[questionId] = []
+      }
+
+      if (checked) {
+        if (!answers[questionId].includes(option)) {
+          answers[questionId].push(option)
+        }
+      } else {
+        answers[questionId] = answers[questionId].filter((a) => a !== option)
+      }
+    }
+
+    // Setup line connect functionality
+    function setupLineConnect() {
+      const lineConnectItems = document.querySelectorAll(".line-connect-item")
+
+      lineConnectItems.forEach((item) => {
+        item.addEventListener("click", function () {
+          const questionId = Number.parseInt(this.dataset.questionId)
+          const column = this.dataset.column
+          const itemId = this.dataset.itemId
+
+          if (column === "A") {
+            // Clear previous selection
+            document.querySelectorAll(`[data-question-id="${questionId}"][data-column="A"]`).forEach((el) => {
+              el.classList.remove("selected")
+            })
+
+            // Select this item
+            this.classList.add("selected")
+            selectedColumnA = itemId
+
+            // Update selected info
+            const selectedInfo = document.getElementById(`selected-info-${questionId}`)
+            selectedInfo.textContent = `Selected: ${this.textContent.split("\n")[0]} - Now click an item from Column B`
+
+            // Enable Column B items
+            document.querySelectorAll(`[data-question-id="${questionId}"][data-column="B"]`).forEach((el) => {
+              el.classList.remove("disabled")
+            })
+          } else if (column === "B" && selectedColumnA) {
+            // Make connection
+            if (!answers[questionId]) {
+              answers[questionId] = {}
+            }
+            answers[questionId][selectedColumnA] = itemId
+
+            // Update visual feedback
+            const columnAItem = document.querySelector(
+              `[data-question-id="${questionId}"][data-column="A"][data-item-id="${selectedColumnA}"]`,
+            )
+            const connectionInfo = document.getElementById(`connection-${questionId}-${selectedColumnA}`)
+            connectionInfo.textContent = `→ ${this.textContent}`
+
+            columnAItem.classList.remove("selected")
+            columnAItem.classList.add("connected")
+            this.classList.add("connected")
+
+            // Clear selection
+            selectedColumnA = null
+            const selectedInfo = document.getElementById(`selected-info-${questionId}`)
+            selectedInfo.textContent = ""
+
+            // Disable Column B items
+            document.querySelectorAll(`[data-question-id="${questionId}"][data-column="B"]`).forEach((el) => {
+              el.classList.add("disabled")
+            })
+          }
+        })
+      })
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+      document.getElementById("submit-btn").addEventListener("click", submitQuiz)
+      document.getElementById("restart-btn").addEventListener("click", restartQuiz)
+    }
+
+    // Submit quiz and show results
+    function submitQuiz() {
+      const results = calculateScore()
+      showResults(results)
+    }
+
+    // Calculate score and incorrect answers
+    function calculateScore() {
+      let correct = 0
+      const incorrectAnswers = []
+
+      questions.forEach((question) => {
+        const userAnswer = answers[question.id]
+        let isCorrect = false
+
+        switch (question.type) {
+          case "single":
+            isCorrect = userAnswer === question.correctAnswers
+            if (!isCorrect) {
+              incorrectAnswers.push({
+                question: question.question,
+                userAnswer: userAnswer || "No answer",
+                correctAnswer: question.correctAnswers,
+              })
+            }
+            break
+
+          case "multiple":
+            const userAnswerArray = userAnswer || []
+            const correctArray = question.correctAnswers
+            isCorrect =
+              correctArray.length === userAnswerArray.length &&
+              correctArray.every((answer) => userAnswerArray.includes(answer))
+
+            if (!isCorrect) {
+              incorrectAnswers.push({
+                question: question.question,
+                userAnswer: userAnswerArray.length > 0 ? userAnswerArray.join(", ") : "No answer",
+                correctAnswer: correctArray.join(", "),
+              })
+            }
+            break
+
+          case "line-connect":
+            const userConnections = userAnswer || {}
+            const correctConnections = question.correctAnswers
+            isCorrect = true
+
+            Object.keys(correctConnections).forEach((key) => {
+              if (userConnections[key] !== correctConnections[key]) {
+                isCorrect = false
+              }
+            })
+
+            if (!isCorrect) {
+              const correctMapping = Object.entries(correctConnections)
+                .map(([key, value]) => {
+                  const columnAItem = question.columnA.find((item) => item.id === key)?.text
+                  const columnBItem = question.columnB.find((item) => item.id === value)?.text
+                  return `${columnAItem} → ${columnBItem}`
+                })
+                .join(", ")
+
+              const userMapping = Object.entries(userConnections)
+                .map(([key, value]) => {
+                  const columnAItem = question.columnA.find((item) => item.id === key)?.text
+                  const columnBItem = question.columnB.find((item) => item.id === value)?.text
+                  return `${columnAItem} → ${columnBItem || "None"}`
+                })
+                .join(", ")
+
+              incorrectAnswers.push({
+                question: question.question,
+                userAnswer: userMapping || "No connections made",
+                correctAnswer: correctMapping,
+              })
+            }
+            break
+        }
+
+        if (isCorrect) {
+          correct++
+        }
+      })
+
+      return {
+        correct,
+        total: questions.length,
+        percentage: Math.round((correct / questions.length) * 100),
+        incorrectAnswers,
+      }
+    }
+
+    // Show results
+    function showResults(results) {
+      // Hide quiz container
+      document.getElementById("quiz-container").style.display = "none"
+      document.querySelector(".submit-container").style.display = "none"
+
+      // Show results container
+      const resultsContainer = document.getElementById("results-container")
+      resultsContainer.style.display = "block"
+
+      // Update score display
+      const scoreDisplay = document.getElementById("score-display")
+      scoreDisplay.innerHTML = `Score: <span class="highlight">${results.correct}/${results.total}</span> (${results.percentage}%)`
+
+      // Update performance message
+      const performanceMessage = document.getElementById("performance-message")
+      if (results.percentage >= 80) {
+        performanceMessage.innerHTML = "🎉 Excellent work! 🎉"
+        performanceMessage.className = "performance-message excellent"
+      } else if (results.percentage >= 60) {
+        performanceMessage.innerHTML = "👍 Good job! 👍"
+        performanceMessage.className = "performance-message good"
+      } else {
+        performanceMessage.innerHTML = "📚 Keep studying! 📚"
+        performanceMessage.className = "performance-message needs-improvement"
+      }
+
+      // Show incorrect answers if any
+      if (results.incorrectAnswers.length > 0) {
+        const incorrectContainer = document.getElementById("incorrect-answers")
+        incorrectContainer.style.display = "block"
+
+        const incorrectList = document.getElementById("incorrect-list")
+        incorrectList.innerHTML = ""
+
+        results.incorrectAnswers.forEach((item) => {
+          const div = document.createElement("div")
+          div.className = "incorrect-item"
+          div.innerHTML = `
+            <div class="incorrect-question">Q: ${item.question}</div>
+            <div class="user-answer">Your answer: ${item.userAnswer}</div>
+            <div class="correct-answer">Correct answer: ${item.correctAnswer}</div>
+          `
+          incorrectList.appendChild(div)
+        })
+      }
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+
+    // Restart quiz
+    function restartQuiz() {
+      // Reset answers
+      answers = {}
+      selectedColumnA = null
+
+      // Show quiz container
+      document.getElementById("quiz-container").style.display = "block"
+      document.querySelector(".submit-container").style.display = "block"
+
+      // Hide results container
+      document.getElementById("results-container").style.display = "none"
+
+      // Regenerate quiz to reset all states
+      generateQuiz()
+
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  </script>
+</body>
+</html>

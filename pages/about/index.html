@@ -6,6 +6,13 @@
   <title>About</title>
     <link rel="icon" type="image/png" href="/images/favicon.png" />
   <style>
+    :root {
+      --accent-color: #00ff00;
+      --container-max-width: 600px;
+      --container-padding: 20px;
+      --cv-container-max-width: 220px;
+      --cv-button-size: 40px;
+    }
     @font-face {
   font-family: 'FiraCodeNerdFontMono';
   src: url('/fonts/FiraCodeNerdFontMono-Medium.ttf') format('truetype');
@@ -15,7 +22,7 @@
 
     body {
       background-color: black;
-      color: #00ff00;
+      color: var(--accent-color);
       font-family: 'Fira Code', monospace;
       margin: 0;
       padding: 10px;
@@ -32,13 +39,24 @@
     a:hover { text-decoration: underline; }
 
     .container {
-      border: 3px solid #00ff00;
-      padding: 20px;
+      border: 3px solid var(--accent-color);
+      padding: var(--container-padding);
       margin-bottom: 20px;
       border-radius: 10px;
       width: 90%;
-      max-width: 600px;
+      max-width: var(--container-max-width);
       text-align: center;
+    }
+
+    .cv-container {
+      border: 3px solid var(--accent-color);
+      padding: 8px;
+      margin: 12px auto 0 auto;
+      border-radius: 4px;
+      width: 10%;
+      max-width: var(--cv-container-max-width);
+      text-align: center;
+      background: transparent;
     }
 
     .highlight {
@@ -76,26 +94,38 @@
       border-radius: 10px;
       border: 3px solid #00ff00;
     }
-  </style>
-</head>
-<body>
 
-  <div class="container">
+    .cv-button {
+      display: inline-block;
+      font-size: var(--cv-button-size);
+      margin: 12px 0;
+      cursor: pointer;
+      transition: transform 0.16s;
+      text-decoration: none;
+      line-height: 1;
+    }
+
+    .cv-button:hover {
+      transform: scale(1.1);
+    }
+    </style>
+  </head>
+  <body>
+
+    <div class="container">
     <h1>About</h1>
-    <p class="content">Short info about this website.</p>
-  </div>
+    </div>
 
-  <div class="container">
-    <h2>Why</h2>
-    <p class="content">I have this website for some projects</div>
+    <div class="container">
+    <h2>Short self-description</h2>
+    <p class="content">
+  I enjoy learning through experimentation. Most of my projects are random, I love exploring various subjects that catch my interest. The goal of the website is to showcase some of my projects (and memes)
+    </p>
+    <h2>Download my CV</h2>
+        <div class="cv-container">
+      <a href="./CV.pdf" class="cv-button"></a>
+      </div>
+    </div>
 
-  <!-- Image Section -->
-  <div class="image-container">
-    <a href="https://youtu.be/pGBlUGeE2mg" target="_blank" rel="noopener">
-      <img src="/images/rip.png" alt="Placeholder Image">
-    </a>
-  </div>
-
-
-</body>
-</html>
+  </body>
+  </html>
